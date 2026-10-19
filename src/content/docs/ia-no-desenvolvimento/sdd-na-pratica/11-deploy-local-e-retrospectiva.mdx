@@ -1,0 +1,161 @@
+---
+title: 11. Deploy local e retrospectiva
+description: "Deixar a aplicação rodando inteira na sua máquina, provar com um clone limpo e olhar para trás com honestidade: o que funcionou, o que não funcionou e o que eu faria diferente."
+---
+
+## Onde estamos
+
+Décimo primeiro e último capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/10-validacao-e-dividas/) a validação manual passou e as cinco dívidas de produção fecharam. Se você chegou direto aqui, precisa da aplicação completa, com as seis histórias e a rodada 7 mergeadas.
+
+**Tag de partida:** o commit `4ae7ba1` (rodada 7 mergeada).
+**Tag de chegada:** `fase-8-retrospectiva`. A tag `fase-7-deploy` marca o fim do deploy local, antes da retrospectiva.
+
+```bash
+git clone https://github.com/leandropiga/arkhos.labs.sdd.contract.git
+cd arkhos.labs.sdd.contract
+git checkout 4ae7ba1
+```
+
+## O que vamos fazer e por quê
+
+1. **Deploy.** Aqui, "deploy" significa **rodar a aplicação completa localmente**, como decidi lá no começo (ADR 0003). Antes de executar, perguntei de novo se eu queria mudar de ideia e publicar em nuvem. Mantive local. Vale reabrir uma decisão antiga quando chega a hora de executá-la: o ADR foi escrito antes de existir código, e perguntar de novo custa um minuto.
+2. **Retrospectiva.** Olhar para trás, para as 20 entradas do diário, e responder: o que funcionou, o que não funcionou e o que eu faria diferente. Tudo sai do diário, dos ADRs e do Git. Onde eu estou opinando, eu digo.
+
+## Passo a passo
+
+### 1. Trate o risco que a divisão do bundle criou (T084)
+
+Na rodada 7 dividi o frontend em pedaços que carregam sob demanda. Isso trouxe uma falha nova: se um pedaço não carregar (a rede caiu, ou o app foi atualizado e o nome do arquivo mudou), a tela ficava em branco, sem explicação.
+
+Criei um `ErroBoundary` (`frontend/src/components/erro-boundary.tsx`), uma classe React em volta do `Suspense` das rotas. Se uma tela falhar ao carregar, aparece uma mensagem em português e o botão **"Recarregar a página"**. O teste usa um `lazy` cujo import dá erro e confere a mensagem e o clique no botão.
+
+Cada otimização cria um modo de falha novo. A resposta é tratá-lo, não esconder.
+
+### 2. Prove que roda na máquina de outra pessoa (T085)
+
+"Roda na minha máquina" não prova nada. O teste de verdade é começar do zero: clonar numa pasta limpa, sem nenhum arquivo seu, e fazer tudo do início.
+
+```bash
+git clone https://github.com/leandropiga/arkhos.labs.sdd.contract.git clone-limpo
+cd clone-limpo
+cp backend/.env.test.example backend/.env.test
+(cd backend && npm ci && npx vitest run)
+(cd frontend && npm ci && npx vitest run && npm run build)
+```
+
+O `.env.test` não vai para o Git. Quem clonar precisa copiar do exemplo antes de rodar os testes do backend, e é por isso que o README e o quickstart dizem isso.
+
+No meu caso:
+
+| Etapa | Resultado |
+|---|---|
+| `npm ci` backend e frontend | ok |
+| Testes do backend | 27 arquivos, 309 testes passando |
+| Testes do frontend | 15 arquivos, 78 testes passando |
+| `npm run build` | ok, sem aviso de chunk grande |
+
+Clone limpo pega arquivo esquecido e dependência que só existia por acaso. O roteiro manual de 14 passos você já fez no capítulo anterior.
+
+### 3. Escreva "Onde publicar", sem prometer o que não testou (T086)
+
+Acrescentei ao `README.md` uma seção de **sugestões** de onde publicar: Render, Railway e VPS com Docker Compose. **Sem passo a passo**, e com os pontos de atenção que eu não testei:
+
+- variáveis de ambiente no servidor, e nunca a chave do Gemini no frontend;
+- cookies e CORS em domínio real, com HTTPS;
+- **disco persistente para os PDFs** (em plataformas com disco descartável, os contratos somem a cada deploy);
+- migrações a cada publicação (`npx prisma migrate deploy`), e o seed só na primeira;
+- a instabilidade ocasional do Gemini.
+
+Um deploy local também é uma decisão. Prefiro terminar com o app rodando e um mapa honesto do que falta para publicar a fingir que nuvem é trivial.
+
+### 4. A retrospectiva
+
+**O laboratório em números:**
+
+| O quê | Quanto |
+|---|---|
+| Entradas no diário | 20 (até esta retrospectiva) |
+| Decisões registradas (ADRs) | 11 |
+| Prompts transcritos | 9 arquivos |
+| Tarefas no `tasks.md` | 86, todas concluídas |
+| Rodadas de implementação | 7, mais a validação manual e o deploy local |
+| Commits no Git | 121 |
+| Código da aplicação | cerca de 6,7 mil linhas |
+| Código de teste | cerca de 5,3 mil linhas |
+| Testes automáticos | 387 (309 no backend e 78 no frontend) |
+
+A proporção chama a atenção: quase uma linha de teste para cada linha de código. Não foi acidente. A constituição exigia testes, e o fluxo começava sempre pelo teste vermelho.
+
+**O que funcionou:**
+
+1. **Gastar tempo nos documentos antes do código.** O `/speckit-analyze` achou uma falha de segurança e uma violação da constituição antes de existir código. O `/speckit-plan` descobriu o limite de 50 MB do Gemini. O `/speckit-clarify` fez duas perguntas que eu nem tinha no roteiro. *Errar num documento custa uma linha; errar em produção custa um dia.*
+2. **Constituição com regras que dá para testar.** "Apagar o arquivo temporário inclusive em caso de erro" virou teste automático, e o passo 14 do roteiro manual conferiu na prática. Regra vaga não vira trava.
+3. **Tarefas por história, não por camada.** Cada rodada terminava com algo que dava para abrir e usar.
+4. **Revisão em duas camadas.** A de tarefa pega defeito local; a final da branch pega o que só se vê no conjunto (o furo de concorrência no bloqueio de login, as mensagens duplicadas, o `EXDEV` combinado com o `PUT`).
+5. **O ledger e os Rulings.** Deixar o agente decidir só é seguro se as decisões ficarem escritas.
+6. **Registrar o erro, não só o acerto.** As lições de que mais aprendi são os tropeços: o `.env` que não existia, o `npx` que baixou outra versão do Prisma, o 503 que parecia bug meu, o filtro de segurança que cortou dois agentes.
+
+**O que não funcionou (ou funcionou pela metade):**
+
+1. **A extensão `bug` do Spec Kit ficou sem uso.** Eu tinha dito que bugs reais passariam pelo fluxo `/speckit-bug-assess`, `-fix` e `-test`. Na prática, **nenhum** dos bugs da implementação passou por ele: foram achados e resolvidos dentro do ciclo de revisão do Superpowers (revisor, correção, re-revisão). Há duas leituras honestas: ou o ciclo do Superpowers já cobre o mesmo terreno e o `bug` é redundante dentro de uma rodada, ou o `bug` serviria para defeitos achados **depois** da rodada (como o 503 do Gemini) e eu simplesmente não tive nenhum desses. Minha opinião é a segunda, mas **não testei**. Não prometo esse fluxo como se tivesse sido exercitado.
+2. **Os scripts do Superpowers esperam um formato de plano que o Spec Kit não gera.** O `task-brief` procura títulos "Task N" e o meu `tasks.md` usa `T001`. Em duas rodadas escrevi os pedidos à mão. Funciona, mas é um atrito de juntar as duas ferramentas.
+3. **Subagentes precisam de cerca.** Um com acesso ao terminal fez estrago fora do projeto; outro usou `git stash` num worktree compartilhado. A lição foi a mesma duas vezes: diga o que o agente **não** pode fazer.
+4. **O processo é pesado para o tamanho do problema.** Para uma aplicação de um usuário só, a cerimônia é grande: 11 ADRs, 20 entradas, 7 rodadas, revisões em camadas. Faz sentido **porque o objetivo era ensinar o processo**. Num projeto real e pequeno, eu cortaria: menos rodadas, uma revisão final só, ADRs só para divergências de verdade. Isso é opinião minha.
+5. **Tudo foi feito por quem acompanhou o tempo todo.** Os pontos de "pare e pergunte" funcionaram, mas o laboratório não mostra o que acontece quando **ninguém está olhando**. Rulings errados custam retrabalho, e eu só descobri os meus porque alguém leu a lista no fim.
+6. **Dívidas acumuladas.** Anotei dívidas rodada a rodada e só fechei cinco. Ficaram em aberto, de propósito: acessibilidade do menu de perfil e do gráfico, "tentar de novo" na Home, alguns testes menores. **Dívida anotada não é dívida paga.**
+
+**O que eu faria diferente:**
+
+1. Começar com o ledger e os Rulings desde a primeira tarefa.
+2. Ter um `ErrorBoundary` e o tratamento de erro de rede **no plano**, e não como dívida da rodada 7. Quem divide o bundle precisa saber que um pedaço pode não carregar.
+3. Rodar o roteiro manual **por pedaços, ao fim de cada rodada**, não tudo no final.
+4. Decidir cedo a regra dos arquivos de configuração local (`.env`, `.env.test`) e ter um script de "preparar ambiente". Eu os recriei à mão em quase toda rodada.
+5. Definir antes que o tutorial só promete o que foi exercitado. Vale para a extensão `bug`.
+
+**O que levar daqui, em sete linhas:**
+
+1. **Documento antes de código.** Constituição, spec, clarify, plano e analyze achando coisa de verdade.
+2. **Dois frameworks, dois papéis.** Spec Kit decide o *quê*; Superpowers decide o *como*. (Era o meu experimento: não há certo ou errado.)
+3. **Regras testáveis.** Se não dá para virar teste, não é regra.
+4. **Deixe o agente decidir, mas faça ele escrever o que decidiu.**
+5. **Revise a branch inteira, mesmo com tudo verde.**
+6. **Conte os tropeços.**
+7. **Seja claro sobre o que ficou de fora**: nuvem, acessibilidade, o fluxo `bug`, as dívidas.
+
+### 5. Feche o ciclo
+
+```bash
+git tag -a fase-7-deploy -m "Fase 7 - Deploy local concluido"
+git tag -a fase-8-retrospectiva -m "Fase 8 - Retrospectiva"
+git push origin fase-7-deploy fase-8-retrospectiva
+```
+
+## O que esperar
+
+- A aplicação rodando inteira na sua máquina: banco em Docker, backend em `http://localhost:3000`, frontend em `http://localhost:5173`.
+- Um clone limpo com testes verdes e build sem aviso.
+- Um `README.md` com a seção "Onde publicar" e a lista do que você **não** testou.
+- A sua própria retrospectiva. Escreva-a antes de ler a minha de novo.
+
+## Se o seu deu diferente
+
+- **O clone limpo falhou.** Ótimo: foi para isso que você o fez. Quase sempre é um arquivo local que não está no Git (`.env.test`, `.env`) ou uma dependência que só existia na sua máquina. Corrija e documente.
+- **Seus números são outros** (testes, linhas, commits). Esperado. Eles dependem do que o seu agente escreveu. Compare a estrutura, não os totais.
+- **Você quer publicar em nuvem.** O laboratório não validou isso. Comece pela lista de pontos de atenção acima, e trate o que você descobrir como um novo ciclo de SDD: spec do que muda, plano, tarefas, análise.
+- **A sua retrospectiva concluiu o contrário da minha** (por exemplo, que o fluxo `bug` vale a pena, ou que SDD é pesado demais). Não tem certo ou errado. Escreva por quê.
+
+Para retomar do meu ponto: `git checkout fase-8-retrospectiva`.
+
+## O que isso mostrou
+
+- **"Roda na minha máquina" não prova nada.** Clone limpo prova mais.
+- **Cada otimização cria um modo de falha novo.**
+- **Os melhores achados do processo vieram dos documentos e da revisão final, não do código.** A frase que resume: errar num documento custa uma linha; errar em produção custa um dia.
+- **O processo é uma ferramenta, não uma religião.** Pesado demais para um app pequeno? Corte. O importante é você saber o que cada etapa evita.
+- **Eu só prometo o que exercitei.** O fluxo `bug`, a nuvem e a acessibilidade ficaram de fora, e eu digo isso.
+
+## Gancho
+
+Este foi o primeiro tutorial de uma série. Os próximos vão tratar de outras situações do dia a dia de quem programa com IA. Não tenho data, e prefiro não prometer uma: vou escrevê-los do jeito que escrevi este, só depois de exercitar cada passo. Se você quiser acompanhar, o [índice de assuntos](/tutoriais/ia-no-desenvolvimento/) lista o que existe e o que vier.
+
+Se você refez o projeto até aqui, ou parou no meio, me conta o que divergiu do que está escrito: é exatamente esse tipo de achado que vira o próximo capítulo.
