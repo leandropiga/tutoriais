@@ -1,0 +1,186 @@
+---
+title: 07. Tarefas e análise
+description: Quebrar o plano em tarefas com critério de pronto e usar o /speckit-analyze para achar falhas de segurança e violações da constituição antes de existir código.
+---
+
+## Onde estamos
+
+Sétimo capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/06-o-plano-que-pegou-o-bug/) o plano técnico saiu e corrigiu o limite do PDF para 50 MB. Se você chegou direto aqui, precisa dos cinco documentos do plano em `specs/001-gestao-contratos-clientes/`: `plan.md`, `research.md`, `data-model.md`, `contracts/api.md` e `quickstart.md`.
+
+**Tag de partida:** `fase-3-planejamento`.
+**Tag de chegada:** `fase-4-tarefas`.
+
+```bash
+git clone https://github.com/leandropiga/arkhos.labs.sdd.contract.git
+cd arkhos.labs.sdd.contract
+git checkout fase-3-planejamento
+```
+
+## O que vamos fazer e por quê
+
+Duas coisas:
+
+1. **Quebrar o plano em tarefas.** Um plano diz *o que* construir, mas não *em que ordem*. A **lista de tarefas** resolve a ordem, mostra o que pode ser feito em paralelo e dá um ponto de parada claro depois de cada pedaço. É essa lista que o agente vai executar na implementação, uma tarefa por vez.
+2. **Rodar a análise.** O `/speckit-analyze` confere se a constituição, a spec, o plano e as tarefas **contam a mesma história**. Eu tinha mexido na spec depois do plano (os 50 MB) e reorganizado as tarefas, e é exatamente nessas costuras que as coisas se perdem. A análise **só lê**: não muda nenhum arquivo, entrega um relatório e pergunta se você quer sugestões de correção.
+
+## Passo a passo
+
+### 1. Gerar as tarefas
+
+```text
+/speckit-tasks Escreva as tarefas em português do Brasil.
+```
+
+Por baixo dos panos, um script localiza a funcionalidade e o template:
+
+```powershell
+.specify/scripts/powershell/setup-tasks.ps1 -Json
+```
+
+O agente lê todos os artefatos do plano e monta o `specs/001-gestao-contratos-clientes/tasks.md`.
+
+### 2. Como a lista é organizada
+
+O formato é rígido, e isso é bom:
+
+```text
+- [ ] T042 [P] [US2] Descrição com o caminho do arquivo
+```
+
+| Parte | Significado |
+|---|---|
+| `- [ ]` | checkbox: o agente marca quando termina |
+| `T042` | ID sequencial, na ordem de execução |
+| `[P]` | pode rodar em paralelo (arquivo diferente, sem depender de tarefa aberta) |
+| `[US2]` | a qual história de usuário da spec a tarefa pertence |
+
+As tarefas são agrupadas **por história de usuário**, não por camada técnica. Em vez de "fazer todos os modelos, depois todas as rotas, depois todas as telas", cada história vai do banco à tela e termina testável sozinha.
+
+| Fase | Tarefas | O que entrega |
+|---|---|---|
+| 1. Setup | 10 | Docker, os dois pacotes, Tailwind v4, shadcn, Vitest |
+| 2. Fundação | 17 | erro padronizado, validação, modelos, sessão, seed, casca do frontend |
+| 3. US1 Login (P1) | 8 | login, logout, rotas protegidas, bloqueio |
+| 4. US2 Clientes (P1) | 11 | cadastro, lista com filtros, exclusão bloqueada |
+| 5. US3 Contratos (P2) | 11 | upload até 50 MB, filtros, download |
+| 6. US4 Análise IA (P3) | 8 | Gemini com dublê, 15 s, toast |
+| 7. US5 Painel (P4) | 4 | totais e gráfico por UF |
+| 8. US6 Perfil (P5) | 4 | nome, foto, telefone |
+| 9. Acabamento | 5 | segurança, desempenho, quickstart |
+| **Total** | **78** | 41 marcadas como paralelizáveis |
+
+(No fim do projeto o `tasks.md` tem 86 tarefas: as últimas oito nasceram da validação e das dívidas, nos capítulos 10 e 11. Aqui são 78.)
+
+### 3. Testes primeiro, de verdade
+
+O template do Spec Kit trata os testes como "opcionais". Aqui eles não são: a constituição (Princípio I) exige TDD. Então, em cada história, as tarefas de teste vêm **antes** e as de implementação dizem qual teste precisam fazer passar:
+
+```text
+- [ ] T028 [P] [US1] Teste HTTP em backend/tests/http/auth.test.ts: ...
+...
+- [ ] T033 [US1] Criar backend/src/modules/auth/rotas-auth.ts ... até T028 e T029 passarem
+```
+
+Esse "até T0xx passar" é o **critério de pronto** de cada tarefa. Não tem discussão.
+
+Outro detalhe: as regras dos campos foram **copiadas literalmente** do `data-model.md` para as tarefas (por exemplo, `nomeCompleto` "obrigatório, 3–150 caracteres"). Assim, quem implementa não precisa adivinhar nem reabrir outro documento.
+
+### 4. O agente revisou a própria lista
+
+Na primeira versão havia um problema de dependência: o teste de "não pode excluir cliente com contratos" (História 2) precisava criar contratos, mas o modelo Contrato só era criado na História 3. Ou seja, a História 2 não era testável sozinha, o que quebra a regra principal da lista.
+
+A correção: Cliente e Contrato são usados por quatro histórias, então foram para a **Fundação**. Depois disso, as tarefas foram renumeradas por um script descartável que o agente escreveu (para não errar referências como "até T037–T039 passarem"), e o formato foi validado com `grep`: toda tarefa tem checkbox, ID, rótulo de história (quando deve ter) e caminho de arquivo.
+
+### 5. MVP e ordem de entrega
+
+- **MVP técnico:** Setup, Fundação e US1 (login).
+- **Primeiro incremento útil:** mais a US2 (clientes). Com o P1 completo, o sistema já serve para alguma coisa.
+- Depois: contratos, análise por IA, painel, perfil, acabamento.
+
+No backend, só a US4 depende de outra história (precisa do upload da US3). As demais podem andar em paralelo depois da Fundação.
+
+### 6. Rodar a análise
+
+Antes de entregar a lista a qualquer agente de implementação:
+
+```text
+/speckit-analyze
+```
+
+O comando monta um inventário dos requisitos (FR-xxx e SC-xxx), liga cada tarefa a um requisito e procura seis tipos de problema: duplicação, ambiguidade, falta de detalhe, conflito com a constituição, buraco de cobertura e inconsistência.
+
+No meu caso: **10 achados.**
+
+| ID | Severidade | O que era |
+|---|---|---|
+| C1 | **CRITICAL** | O `shadcn init/add` instala pacotes (`radix-ui`, `clsx`, `tailwind-merge`...) que o plano não justificava. O componente de calendário ainda trazia `react-day-picker` e `date-fns`. A constituição (Princípio II) exige justificar toda dependência |
+| A1 | HIGH | A spec diz "não revelar se o usuário existe", mas o bloqueio após 5 erros só acontece para usuário real. Quem tenta 6 vezes descobre se o nome existe |
+| U1 | MEDIUM | A spec manda recusar PDF "corrompido", mas o plano só olhava o começo do arquivo (`%PDF-`). Um arquivo truncado passaria |
+| G1 | MEDIUM | A sessão expira em 8 h, mas só a primeira tela conferia isso. Se expirasse no meio do uso, o app não mandaria para o login |
+| G2 | MEDIUM | O contrato da API manda listar os contratos no detalhe do cliente, mas nenhuma tarefa de backend fazia isso |
+| U2, I1, I2, G3, D1 | LOW | detalhes: teste faltando para `env.ts`, botão "Sair" criado em dois lugares, tipos do React fora da lista, um caso de paginação sem teste, uma repetição aceitável na spec |
+
+Por que o C1 é **CRITICAL** se é "só documentação"? Porque a regra do comando é clara: **conflito com a constituição é sempre crítico.** A constituição não se negocia dentro da análise; ou você ajusta spec, plano e tarefas, ou muda a constituição de forma explícita.
+
+### 7. Decidir e corrigir
+
+Para o A1 havia duas saídas: proteger também os nomes inexistentes (mais código) ou aceitar o risco e escrever isso. Eu escolhi **aceitar e registrar**: o sistema tem um único usuário, criado na instalação, e o bloqueio já limita tentativas de senha. Risco aceito **por escrito** é diferente de risco ignorado.
+
+Pedi as sugestões de correção, revisei, e mandei aplicar todas, inclusive as LOW. Minhas respostas ao Claude foram "vamos pro recomendado" (para o A1) e "aplique tudo, incluindo os LOW".
+
+| Achado | Correção |
+|---|---|
+| C1 | plano justifica a base do shadcn/ui; filtro de datas usa `Input type="date"` (nativo) em vez do calendário: duas dependências a menos |
+| A1 | FR-002 cita a exceção; Premissas explicam o risco aceito; contrato da API anota o `429` |
+| U1 | validação também procura `%%EOF` no fim do arquivo (sem biblioteca de PDF) |
+| G1 | o cliente HTTP emite um evento `sessao-expirada` em qualquer `401` e o app volta ao login |
+| G2 | tarefa e teste para devolver os contratos no detalhe do cliente |
+| LOW | teste de `env.ts`, "Sair" é *movido* para o menu de perfil, tipos do React, caso de paginação |
+
+Nenhuma correção mudou a numeração das tarefas, e nenhum comando precisou ser refeito. Foram edições pontuais em `spec.md`, `plan.md`, `research.md`, `data-model.md`, `contracts/api.md` e `tasks.md`.
+
+### 8. Rodar a análise de novo
+
+```text
+/speckit-analyze
+```
+
+No meu caso: **zero achados.** Cobertura de 100% dos 40 requisitos, nenhum conflito com a constituição, 78 tarefas no formato certo. Rodar de novo é a prova de que a correção não abriu outro buraco.
+
+### 9. Feche a fase com uma tag
+
+```bash
+git tag -a fase-4-tarefas -m "Fase 4 - Tarefas concluida"
+git push origin fase-4-tarefas
+```
+
+## O que esperar
+
+- Um `tasks.md` com tarefas no formato `- [ ] T0xx [P] [USn] descrição com caminho de arquivo`, agrupadas por história.
+- Em cada história, tarefas de teste antes das de implementação, com "até T0xx passar" como critério de pronto.
+- Um relatório de análise com achados (os meus foram 10; os seus podem ser mais ou menos) e uma segunda rodada limpa depois das correções.
+
+Para conferir: depois da segunda análise, o relatório deve dizer que não há achados críticos ou altos, e que cada requisito tem pelo menos uma tarefa.
+
+## Se o seu deu diferente
+
+- **Os seus achados são outros.** Esperado. A análise lê os **seus** documentos, e o plano gerado por outro modelo tem outras costuras. Corrija os críticos e altos; para os médios e baixos, decida caso a caso.
+- **Nenhum achado crítico na primeira rodada.** Ótimo para você. Rode de novo depois de qualquer mudança que fizer.
+- **O número de tarefas é diferente de 78.** Normal. Importa a estrutura: testes antes, por história, com critério de pronto.
+- **A análise sugeriu mudar a constituição.** Pode ser o certo. Mas faça isso de forma explícita, com o `/speckit-constitution` e um registro da decisão, e não aceite um conflito calado.
+- **O analyze apontou o vazamento do usuário no login e você quer proteger também.** Pode. Vale uma tarefa e um teste a mais. Eu aceitei o risco por escrito porque o sistema tem um único usuário.
+
+Para retomar do meu ponto: `git checkout fase-4-tarefas`.
+
+## O que isso mostrou
+
+- **Organizar por história, e não por camada, é o que permite entregar e testar aos pedaços.**
+- **Um critério de pronto objetivo evita tarefas que "quase" terminam.**
+- **Cada documento pode estar certo sozinho e errado em conjunto.** O analyze olha as costuras.
+- **Achei uma falha de segurança e uma violação da constituição antes de existir código.** O conserto custou algumas linhas de texto.
+- **Aceitar um risco é uma decisão válida, desde que fique escrita.**
+- **Rode o analyze de novo depois de corrigir.**
+
+## Gancho
+
+Tudo certo no papel: constituição, spec, plano e 78 tarefas, todas coerentes entre si. Agora vem a parte em que a maioria dos tutoriais começa: escrever código. Eu vou deixar **subagentes** fazerem isso, um para escrever cada tarefa e outro para revisar. No [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/08-implementar-com-subagentes/) eu mostro como isso funciona e quanto custa.
