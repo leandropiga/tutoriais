@@ -1,0 +1,194 @@
+---
+title: 08. Implementar com subagentes
+description: "Como executar o tasks.md com o Superpowers, usando worktree, um subagente por tarefa, revisão, ledger e Rulings. Com o prompt completo da primeira rodada e o custo honesto."
+---
+
+## Onde estamos
+
+Oitavo capítulo. Até aqui só escrevemos documentos. Se você chegou direto, precisa de um repositório com a constituição, a spec esclarecida, o plano e o `tasks.md` (78 tarefas, já analisado), e o Superpowers instalado.
+
+**Tag de partida:** `fase-4-tarefas`.
+**Tag de chegada:** `fase-5a-rodada-1` (o fim da primeira rodada, tarefas T001 a T035).
+
+```bash
+git clone https://github.com/leandropiga/arkhos.labs.sdd.contract.git
+cd arkhos.labs.sdd.contract
+git checkout fase-4-tarefas
+```
+
+## O que vamos fazer e por quê
+
+Vamos escrever código pela primeira vez, mas com o Spec Kit e o Superpowers dividindo o trabalho: o Spec Kit já entregou a lista (`tasks.md`), e o Superpowers vai **executá-la com disciplina**.
+
+O Spec Kit tem o seu próprio executor, o `/speckit-implement`, que roda as tarefas em ordem na sessão e marca `[X]`. Eu escolhi **não usá-lo** no fluxo principal, e conto o motivo: ele trata TDD como instrução, sem worktree, sem subagentes e sem revisão de código. No Superpowers, o fluxo `subagent-driven-development` faz o seguinte:
+
+- um **subagente novo para cada tarefa** (contexto limpo, sem herdar o histórico da conversa);
+- **duas revisões depois de cada tarefa**: "fez o que a spec manda?" e "o código está bom?";
+- uma **revisão geral da branch** no fim da rodada;
+- um **ledger**: um arquivo de trabalho que registra o progresso e cada decisão tomada.
+
+Termos que vão aparecer:
+
+- **Rodada.** Um pedaço do `tasks.md` com escopo explícito ("de T001 a T035"). O Superpowers 7 **não pausa sozinho** entre tarefas; o tamanho da rodada é o seu ponto de revisão.
+- **Worktree.** Uma segunda cópia de trabalho do mesmo repositório, em outra pasta e outra branch. O agente trabalha ali e a sua `main` fica intocada.
+- **Ledger.** O diário de bordo do agente, em `.superpowers/sdd/`, **fora do Git**. É o mapa de recuperação se a conversa for interrompida.
+- **Ruling.** Uma decisão que o agente tomou sozinho diante de uma ambiguidade, escrita no formato `Ruling: decisão, motivo, custo se estiver errada`. Em vez de parar e perguntar a cada dúvida, ele decide e registra.
+
+:::note[Isto é parte dos meus estudos]
+Esse fluxo é caro. Eu o escolhi porque queria ver o que a revisão por tarefa pega, não porque seja o único jeito razoável. Mais abaixo eu digo o que dá para cortar.
+:::
+
+## Passo a passo
+
+### 1. Confira o ambiente
+
+```powershell
+docker info --format '{{.ServerVersion}}'   # o Docker precisa estar rodando
+git status                                  # árvore limpa, na main
+```
+
+### 2. Mande o pedido
+
+Não é um comando com `/`. É uma mensagem comum, e o Superpowers reconhece o pedido e ativa a skill `subagent-driven-development`. O texto abaixo foi o que eu mandei. Repare nas regras:
+
+- **Escopo explícito** (T001 a T035) e "pare".
+- **O plano é o `tasks.md`.** Sem regenerar nem criar outro plano: o formato nativo do Superpowers é outro, e sem essa regra ele tenderia a criar um plano próprio.
+- **A spec é a autoridade.** É assim que a v7 resolve conflitos sozinha.
+- **Parar antes de merge, push ou qualquer coisa fora do worktree.**
+- **Listar os Rulings no fim**, porque o ledger fica fora do Git.
+
+```text
+Inicie a implementação do arquivo de tarefas specs/001-gestao-contratos-clientes/tasks.md usando
+o fluxo do Superpowers: superpowers:subagent-driven-development.
+
+Escopo desta rodada: somente as tarefas T001 a T035 (Setup, Fundação e História 1). Ao concluir a
+T035, pare e me mostre o resultado. Não comece a T036.
+
+Regras:
+
+1. O plano é o tasks.md. Não regenere nem reescreva o plano e não crie outro plano em
+   docs/superpowers/plans/. A tarefa Tnnn corresponde à Task nnn no ledger.
+2. A spec (specs/001-gestao-contratos-clientes/spec.md) é a autoridade. plan.md, research.md,
+   data-model.md e contracts/api.md são o contexto técnico. A constituição
+   (.specify/memory/constitution.md) é inegociável.
+3. Trabalhe num worktree isolado em .worktrees/, numa branch chamada 001-rodada-1-mvp.
+4. Um subagente novo por tarefa, com revisão de aderência à spec e de qualidade depois de cada
+   uma, e uma revisão geral no fim da rodada.
+5. TDD rigoroso (superpowers:test-driven-development): o teste é escrito primeiro e visto
+   falhando pelo motivo certo antes do código. Quando a tarefa diz "até T0xx passar", esse é o
+   critério de pronto.
+6. Ao concluir cada tarefa, marque-a como [X] no tasks.md, no mesmo commit da tarefa.
+7. Commits em português, no formato "test|feat|chore: Tnnn <resumo>".
+8. Use exatamente as versões de research.md (R-01). Atenção: prisma@7.10.0, não a tag latest.
+9. Para os testes, suba o banco com "docker compose up -d" e crie backend/.env e
+   backend/.env.test locais a partir dos exemplos, com valores de desenvolvimento. Esses arquivos
+   não vão para o Git. GEMINI_API_KEY pode ser um valor fictício: nenhum teste chama a API real.
+10. Pare e me pergunte antes de: merge na main, push, ou qualquer ação fora do worktree.
+11. Ao terminar a rodada: rode as suítes de teste completas do backend e do frontend e mostre a
+    saída, e liste todos os Rulings do ledger. Vou copiá-los para o diário.
+```
+
+Depois do primeiro pedido, a única outra mensagem minha no meio foi: "pode seguir, me avise só ao fim da T035".
+
+### 3. O que acontece enquanto roda
+
+Para cada tarefa, o fluxo faz o ciclo **teste vermelho, código, teste verde**:
+
+1. O implementador escreve o teste primeiro e **vê ele falhar pelo motivo certo** antes de escrever o código (é a regra de TDD da constituição, Princípio I).
+2. Escreve o código mínimo, roda o teste, faz o commit (`test|feat|chore: Tnnn <resumo>`) com o `[X]` no `tasks.md` **no mesmo commit**.
+3. Um revisor confere aderência à spec e qualidade.
+4. Se achou problema, o implementador corrige e o revisor revê.
+
+Tarefas só de teste são commitadas **falhando**, de propósito (TDD). Por isso a suíte fica vermelha em alguns commits intermediários, e isso é esperado.
+
+Você pode acompanhar de fora:
+
+```bash
+git worktree list
+git log --oneline 001-rodada-1-mvp
+```
+
+### 4. O que saiu
+
+- **44 commits** na branch, **94 arquivos**, as 35 tarefas marcadas `[X]`.
+- Backend: Express 5, Prisma 7 e PostgreSQL, com JWT em cookie HttpOnly, senha com scrypt, bloqueio de login persistente e middleware único de erros.
+- Frontend: Vite, React, Tailwind v4 e shadcn/ui, com tela de login, rotas protegidas e menu lateral.
+
+Suítes no fim:
+
+```text
+backend/   npx vitest run   -> Test Files 12 passed (12) | Tests 78 passed (78)
+frontend/  npx vitest run   -> Test Files  6 passed (6)  | Tests 27 passed (27)
+```
+
+### 5. Os Rulings
+
+Este é o material mais valioso da rodada. É o tipo de decisão que a IA toma **sem te chamar**. Algumas das mais de 30 que o ledger registrou:
+
+| Decisão | Custo se errado |
+|---|---|
+| O CLI do shadcn/ui não tem mais o componente `form`; trocado por `Field` + react-hook-form + zod | padrão diferente do plano |
+| O client gerado do Prisma fica fora do Git; um `postinstall` o gera | quem clona precisa do `generate` |
+| Logout é rota protegida, **sem** revogação do JWT | token copiado vale até 8 h |
+| Bloqueio vencido **zera o contador** (a regra literal "== 5" deixaria um contador parado em 5 sem bloquear nunca mais) | diverge do texto do data-model |
+| Tarefas só de teste são commitadas falhando | suíte vermelha em commits intermediários |
+| Vulnerabilidades do `npm audit` na CLI do Prisma aceitas, sem `audit fix` | exposição só em desenvolvimento |
+
+Sem os Rulings escritos, decisões como "bloqueio vencido zera o contador" passariam despercebidas.
+
+### 6. A revisão final
+
+Depois da última tarefa, uma revisão da **branch inteira**, com o modelo mais capaz. Ela saiu como "pronta com correções" e achou quatro problemas sérios que as revisões por tarefa não tinham achado:
+
+1. **Bloqueio de login furado por concorrência.** 50 tentativas simultâneas foram todas verificadas. Passou a ser atômico no banco.
+2. **Mensagens do zod em inglês** apareciam nos erros da API.
+3. **`Perfil.id`** era `number` no frontend e UUID (`string`) no backend.
+4. **`rotas.tsx`**, a proteção de rotas, não tinha teste.
+
+Cada uma foi corrigida com o teste escrito antes.
+
+### 7. Mergear e fechar a rodada
+
+O agente parou, como pedi. Revisei, e o merge na `main` (com push) foi o "commit de etapa" da rodada. A tag `fase-5a-rodada-1` aponta para esse ponto no laboratório. Eu a criei depois, só para este tutorial: no andamento real do laboratório, a tag oficial da fase 5 só sai na última rodada.
+
+## O que esperar
+
+- Uma pasta `.worktrees/` (ignorada pelo Git) e uma branch por rodada.
+- Um commit por tarefa, com `[X]` no `tasks.md`.
+- Um ledger em `.superpowers/sdd/` com os Rulings.
+- Suítes verdes ao fim e uma lista de Rulings para você ler.
+
+Para conferir: rode `npx vitest run` em `backend/` e em `frontend/`. Se passar, leia os Rulings. **Se você não ler os Rulings, você aceitou decisões que não conhece.**
+
+## Custo e o que dá para cortar
+
+Eu não medi tokens (veja a visão geral do tutorial). Mas posso dizer onde o gasto está: um implementador **e** dois revisores por tarefa, com contexto novo cada vez, mais a revisão final. As alternativas, em ordem de custo:
+
+1. **`/speckit-implement`** do próprio Spec Kit: o mais simples e barato; abre mão da disciplina e da revisão.
+2. **Superpowers inline (`executing-plans`)**: você faz as tarefas na própria sessão com TDD, e há **uma** revisão no fim. Mais barato, mas sem contexto limpo por tarefa nem revisão por tarefa.
+3. **O que eu usei**: subagente por tarefa, revisão por tarefa e revisão final.
+
+Eu usei a terceira porque quis ver o que a revisão por tarefa pega. Se o seu projeto é pequeno, a segunda é uma escolha razoável. Essa decisão está registrada no laboratório como um ADR, com as quatro opções.
+
+## Se o seu deu diferente
+
+- **O agente quis regenerar o plano ou criar um plano novo.** Repita a regra 1 do pedido com mais ênfase: o plano é o `tasks.md`.
+- **Ele passou do escopo (começou a T036).** A v7 não pausa sozinha. Reforce "pare ao concluir a T035", e diminua a rodada se precisar.
+- **A suíte não passa ou os números são diferentes dos meus.** Normal: o código gerado varia. O critério é a suíte do **seu** projeto passar e as tarefas estarem marcadas.
+- **O CLI do shadcn/ui travou esperando resposta.** Ele é interativo; sem terminal, trava. Passe os parâmetros na linha de comando (eu usei `-p nova`).
+- **O Prisma 7 deu erros estranhos** (adapter obrigatório, `prisma.config.ts`, client gerado fora do `node_modules`). Veja o `research.md`; foi decisão do plano.
+- **Subagente mexeu fora do projeto** (veja o aviso abaixo). Aconteceu comigo.
+- **Você quer outro nome de branch ou de worktree.** Sem problema; só mantenha os dois fáceis de achar no seu diário.
+
+Para retomar do meu ponto: `git checkout fase-5a-rodada-1`.
+
+## O que isso mostrou
+
+- **Dar liberdade ao agente exige perguntar o que ele fez depois.** Os Rulings são a "caixa-preta" do processo.
+- **A revisão final achou o que as revisões por tarefa não acharam.** O furo de concorrência no bloqueio só aparece olhando o conjunto. Reveja a branch inteira, mesmo com tudo verde.
+- **Subagente com acesso ao terminal pode fazer estrago fora do projeto.** Na T023, um subagente rodou `taskkill /IM node.exe` para parar o servidor de desenvolvimento, e isso matou **todos** os processos Node da minha máquina, não só os do projeto. Nada se perdeu de forma permanente, mas desde então eu proíbo isso nas instruções dos subagentes ("pare só o processo que você iniciou"). Na T021, outro usou `git stash`; a pilha de stash é compartilhada entre o checkout principal e os worktrees, então passei a proibir também. **Diga o que o agente não pode fazer, não só o que ele deve fazer.**
+- **O plano envelhece.** O CLI do shadcn/ui não era o do rascunho. Registre divergências assim que aparecem: aqui virou o ADR 0011.
+
+## Gancho
+
+O MVP de login passou em 105 testes (78 no backend, 27 no frontend), e a revisão final ainda achou quatro problemas sérios. Se um código "pronto" ainda tinha quatro, **o que será que as próximas rodadas vão esconder?** E quem lê tudo isso, os Rulings, as revisões, os resultados? No [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/09-revisao-em-camadas-e-rulings/) eu mostro as outras seis rodadas e o que só a revisão final achou em cada uma.
