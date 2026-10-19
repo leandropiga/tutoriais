@@ -1,6 +1,110 @@
 ---
 title: SDD na prática
-description: Visão geral do tutorial.
+description: Do vibe coding à especificação antes do código, construindo uma aplicação real com Spec Kit, Superpowers e Claude Code.
 ---
 
-Em construção.
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+Este tutorial mostra, passo a passo, como fazer **SDD (Spec-Driven Development)** com o Claude Code.
+Você vai construir a mesma aplicação que eu construí no meu laboratório: um sistema de gestão de
+contratos de clientes, com login, cadastro de clientes, contratos com PDF e análise de riscos por IA.
+
+O texto vem do meu diário de estudo. Os tropeços estão aqui de propósito, porque é neles que mais se
+aprende.
+
+:::note[Isto é parte dos meus estudos]
+Não existe certo ou errado aqui. Eu juntei duas ferramentas porque quis entender o que cada uma faz
+bem, e conto o que funcionou e o que não funcionou **no meu caso**. Se você chegar a outra
+conclusão, ótimo: é para isso que o tutorial serve.
+:::
+
+## Para quem é
+
+- Programador **sênior** que já usa IA no dia a dia, mas em **vibe coding**: pede código, ajusta até
+  funcionar, e segue em frente sem um processo.
+- Quem quer entender o que o SDD muda **na prática**, vendo as etapas acontecendo, e não só lendo
+  sobre o conceito.
+
+Não é para quem nunca usou IA para programar: eu **não** explico o que é prompt, contexto ou agente.
+Também não ensino Node, React, Prisma nem Docker. Os termos do SDD eu explico do zero, na primeira
+vez que aparecem.
+
+## O que você vai construir
+
+Uma aplicação web de gestão de contratos de clientes:
+
+- login com bloqueio temporário depois de erros de senha;
+- cadastro de clientes (CPF único, filtros por nome e CPF);
+- contratos com PDF anexado, validado e guardado;
+- análise de riscos do contrato por IA (Gemini), com resumo, riscos e cláusulas;
+- painel inicial com gráfico por UF e perfil do usuário.
+
+Backend em Node.js, Express e Prisma; frontend em React, Vite, Tailwind e shadcn/ui; PostgreSQL em
+Docker.
+
+## Pré-requisitos
+
+| Ferramenta | Versão que usei | Para quê |
+|---|---|---|
+| Node.js e npm | Node 24 LTS | aplicação |
+| Docker com Compose | v2 ou superior | PostgreSQL |
+| Git e GitHub CLI (`gh`) | recentes | versionar e publicar |
+| Claude Code | recente | o agente que faz tudo |
+| Chave da API do Gemini | opcional | só no capítulo da análise por IA |
+
+Cada capítulo informa as versões exatas que usei e a data em que conferi.
+
+## Custo, sem enfeite
+
+Eu **não medi os tokens** que gastei, então não vou inventar um número. O que posso dizer com
+segurança:
+
+- O laboratório tem 86 tarefas, sete rodadas de implementação e cerca de 120 commits, feitos em
+  quatro dias de calendário (14 a 17 de outubro de 2026), mais a retrospectiva.
+- A implementação usa vários subagentes por tarefa (um que escreve, um que revisa). Isso é
+  **a parte cara**. O capítulo 08 mostra o que dá para cortar.
+- As etapas de documento (constituição, especificação, plano, tarefas) são baratas perto da
+  implementação.
+
+Considere que reproduzir tudo é um projeto de **dias**, não de uma tarde. Dá para parar em qualquer
+capítulo: cada um termina com uma tag no repositório para você retomar de onde quiser.
+
+## A IA vai divergir do que está escrito
+
+Esta é a regra mais importante do tutorial: **o seu resultado não vai ser igual ao meu.** O modelo
+muda, o contexto muda, e duas execuções do mesmo prompt dão textos diferentes. Por isso:
+
+1. Os prompts estão copiáveis e na íntegra, mas a resposta que você recebe vai variar.
+2. Cada capítulo diz **o que esperar** e como conferir que deu certo, sem depender do texto exato.
+3. Cada capítulo tem uma caixa **"Se o seu deu diferente"** com o que fazer.
+4. O repositório do laboratório tem uma **tag por ponto de partida e de chegada**. Se o seu
+   caminho se afastar demais, você faz o checkout da tag e segue dali.
+
+```bash
+git clone https://github.com/leandropiga/arkhos.labs.sdd.contract.git
+cd arkhos.labs.sdd.contract
+git checkout fase-3-planejamento   # exemplo: o ponto onde o capítulo 06 termina
+```
+
+## Os capítulos
+
+<CardGrid>
+  <LinkCard title="01. Do vibe coding ao SDD" href="/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/01-do-vibe-coding-ao-sdd/" description="O que é SDD e o que a evidência diz, sem propaganda." />
+  <LinkCard title="02. Dois frameworks, uma escolha" href="/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/02-dois-frameworks-uma-escolha/" description="Por que Spec Kit e Superpowers, e o setup." />
+  <LinkCard title="03. Ideação" href="/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/03-ideacao/" description="De uma ideia solta à visão do produto." />
+  <LinkCard title="04. Constituição e especificação" href="/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/04-constituicao-e-especificacao/" description="Regras testáveis e a spec por histórias." />
+  <LinkCard title="05. O momento 'não tinha pensado nisso'" href="/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/05-nao-tinha-pensado-nisso/" description="A clarificação que me fez perceber o que faltava." />
+  <LinkCard title="06. O plano que pegou o bug antes do código" href="/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/06-o-plano-que-pegou-o-bug/" description="O limite de 50 MB que a spec errou." />
+  <LinkCard title="07. Tarefas e análise" href="/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/07-tarefas-e-analise/" description="Quebrar em tarefas e achar falhas antes do código." />
+  <LinkCard title="08. Implementar com subagentes" href="/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/08-implementar-com-subagentes/" description="Worktree, ledger e a primeira rodada." />
+  <LinkCard title="09. Revisão em camadas e Rulings" href="/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/09-revisao-em-camadas-e-rulings/" description="O que só a revisão final achou." />
+  <LinkCard title="10. Validação e dívidas" href="/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/10-validacao-e-dividas/" description="O roteiro manual com a IA de verdade." />
+  <LinkCard title="11. Deploy local e retrospectiva" href="/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/11-deploy-local-e-retrospectiva/" description="O que funcionou, o que não funcionou." />
+</CardGrid>
+
+## O laboratório
+
+Todo o material de apoio (código, diário, decisões, prompts e as tags) está em
+[github.com/leandropiga/arkhos.labs.sdd.contract](https://github.com/leandropiga/arkhos.labs.sdd.contract).
+
+[Começar pelo capítulo 01 →](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/01-do-vibe-coding-ao-sdd/)
