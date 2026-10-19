@@ -1,0 +1,294 @@
+---
+title: 02. Dois frameworks, uma escolha
+description: Por que eu uso o Spec Kit e o Superpowers juntos, sem dizer que é a única resposta certa, e como instalar e preparar tudo.
+---
+
+## Onde estamos
+
+Segundo capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/01-do-vibe-coding-ao-sdd/) vimos o que é SDD e o que a evidência diz. Agora vamos escolher as ferramentas e montar o laboratório. Se você chegou direto aqui, não perdeu nada de código: o capítulo 01 é só conceito.
+
+**Tag de partida:** nenhuma. Você começa de uma pasta vazia.
+**Tag de chegada:** `fase-0-setup` (no [laboratório](https://github.com/leandropiga/arkhos.labs.sdd.contract)).
+
+## O que vamos fazer e por quê
+
+Vamos instalar duas ferramentas e conectar o Claude Code ao GitHub, para ele mesmo criar repositório, fazer commit e push.
+
+:::note[Isto é parte dos meus estudos]
+Eu usei **dois** frameworks de SDD juntos porque quis testar a divisão de trabalho entre eles. Não estou dizendo que é o jeito certo, nem que um framework só não resolveria. Existem outras opções (OpenSpec, BMAD, o próprio Kiro) e eu não comparei com elas. Conto o que eu escolhi e por quê. Você decide o seu.
+:::
+
+A divisão que eu quis testar:
+
+| Ferramenta | Cuida de | O que ela entrega |
+|---|---|---|
+| **Spec Kit** (GitHub) | o **quê**: o que o sistema deve fazer | arquivos que ficam no repositório: constituição, spec, plano, tarefas |
+| **Superpowers** (plugin do Claude Code) | o **como**: a disciplina na hora de implementar | TDD, worktrees, subagentes e revisão de código |
+
+Por que os dois? Porque cada um sozinho deixa uma lacuna, pelo menos no meu entendimento:
+
+- Só o Spec Kit gera ótimos documentos, mas **não obriga** o agente a seguir uma disciplina quando ele escreve o código.
+- Só o Superpowers impõe a disciplina de implementação, mas o plano que ele gera é **temporário**. Não sobra uma spec viva no repositório.
+
+Juntos: o Spec Kit produz os artefatos duráveis (fases 2 a 4 deste tutorial) e o Superpowers executa o `tasks.md` com disciplina (da fase 5 em diante). O custo é concreto: duas ferramentas para instalar e entender, e uma implementação mais lenta e mais cara em tokens, em troca de menos retrabalho. Se o balanço compensa para você, só dá para saber testando.
+
+Alguns termos que vão aparecer, para você não tropeçar:
+
+- **Spec Kit** gera **constituição** (as regras do projeto, que valem para tudo), **spec** (o que construir, por histórias), **plano** (como construir) e **tarefas** (a lista de trabalho). Cada um tem um capítulo.
+- **Superpowers** traz **skills** (instruções que o Claude Code carrega sob demanda) para brainstorming, planos, TDD e subagentes.
+
+## Passo a passo
+
+Versões que usei, conferidas em 19/10/2026:
+
+| Ferramenta | Versão |
+|---|---|
+| Node.js | 24.14.0 |
+| Git | 2.53.0 |
+| GitHub CLI (`gh`) | 2.97.0 |
+| `uv` | 0.11.32 |
+| Spec Kit (`specify`) | 1.2.0 |
+| Superpowers | 7.0.0 |
+| Claude Code | 2.1.302 |
+| Docker / Compose | 29.4.1 / v5.1.3 |
+
+No laboratório original o sistema era Windows 11 (PowerShell). Os comandos abaixo funcionam em macOS e Linux também; onde muda, eu aviso.
+
+### 1. Crie a pasta e inicie o Git
+
+```bash
+mkdir arkhos.labs.sdd.contract
+cd arkhos.labs.sdd.contract
+git init -b main
+```
+
+O nome da pasta é o que eu usei. Use o que quiser.
+
+### 2. Conecte o GitHub (`gh`)
+
+O Claude Code já sabe rodar comandos no terminal. Se o terminal estiver logado no GitHub, o Claude também está. Não precisa de plugin extra.
+
+```powershell
+# Windows (PowerShell)
+winget install --id GitHub.cli
+```
+
+```bash
+# macOS
+brew install gh
+```
+
+Feche e abra o terminal, e faça o login:
+
+```bash
+gh --version
+gh auth login
+```
+
+Respostas que eu dei:
+
+| Pergunta | Resposta |
+|---|---|
+| Where do you use GitHub? | `GitHub.com` |
+| Preferred protocol for Git operations? | `HTTPS` |
+| Authenticate Git with your GitHub credentials? | `Yes` |
+| How would you like to authenticate? | `Login with a web browser` |
+
+O "Authenticate Git = Yes" importa: faz o `git push` usar o mesmo login do `gh`. Sem isso, o push pediria uma senha, e o Claude travaria esperando você digitar.
+
+```bash
+gh auth status
+```
+
+Deve aparecer `Logged in to github.com account SEU-USUARIO` e o escopo `repo` entre os escopos do token. Configure também a identidade do Git:
+
+```bash
+git config --global user.name "Seu Nome"
+git config --global user.email "seu-email@exemplo.com"
+```
+
+### 3. Deixe o Claude registrar tudo
+
+Crie um `CLAUDE.md` na raiz. O Claude Code lê esse arquivo a cada sessão. A regra mais importante do meu laboratório está nele: **toda etapa deixa rastro em `docs/`**. Uma versão enxuta para você começar:
+
+```markdown
+# CLAUDE.md
+
+## Propósito
+Laboratório de estudo de SDD (Spec-Driven Development). O produto é o registro do processo.
+Idioma: português (pt-BR).
+
+## Regra principal: registrar tudo
+1. Diário (`docs/diario/`): uma entrada numerada por etapa, com objetivo, comandos, prompts,
+   arquivos gerados, problemas e aprendizados.
+2. Decisões (`docs/decisoes/`): toda escolha relevante vira um ADR curto.
+3. Prompts (`docs/prompts/`): prompts significativos, transcritos na íntegra.
+
+## Git
+- Um commit por etapa concluída, em pt-BR. Push após cada commit de etapa.
+- Ao fim de cada fase, criar a tag `fase-N-<nome>` e enviá-la ao remoto.
+```
+
+Essa é uma versão resumida. O `CLAUDE.md` completo, com todas as regras que o laboratório foi ganhando, está no [laboratório](https://github.com/leandropiga/arkhos.labs.sdd.contract/blob/fase-0-setup/CLAUDE.md), na tag `fase-0-setup`.
+
+O prompt que eu mandei para começar o laboratório foi este:
+
+```text
+o objetivo desse repositorio é ser uma aplicação de laboratorio (labs) para fins de estudo
+usando framework SDD. Preciso que todos os passos desde a ideação até a implementação e
+deploy sejam registrados para posteriormente eu passa criar um tutorial sobre o assunto e
+disponibilizar na internet.
+```
+
+Ele gerou a estrutura `docs/` (diário, decisões, prompts) e o `CLAUDE.md`. Colocar a regra de registro no `CLAUDE.md` faz o hábito ser automático: você não precisa lembrar de pedir.
+
+### 4. (Opcional) Pré-autorize comandos
+
+Por padrão o Claude Code pede permissão antes de rodar comandos. Para não aprovar cada `git commit`, crie `.claude/settings.json` com uma lista do que é liberado e do que é proibido:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status:*)", "Bash(git add:*)", "Bash(git commit:*)",
+      "Bash(git push:*)", "Bash(git tag:*)", "Bash(gh repo view:*)"
+    ],
+    "deny": [
+      "Bash(git push --force:*)", "Bash(gh repo delete:*)"
+    ]
+  }
+}
+```
+
+Repare que `gh repo create` **não** está na lista liberada. É de propósito: criar repositório publica coisas na internet, então é bom o Claude perguntar antes. (No Windows, o arquivo completo do laboratório repete cada regra também como `PowerShell(...)`.)
+
+### 5. Instale o Spec Kit
+
+Ele usa o `uv` (gerenciador de pacotes Python). Instale o `uv` em <https://docs.astral.sh/uv/> se ainda não tiver.
+
+```bash
+uv tool install specify-cli
+specify --version
+```
+
+Aqui eu tropecei: a saída mostrou `specify 0.15.2.dev0`, uma versão velha que já estava na minha máquina. O `uv tool install` **não atualiza** uma ferramenta que já existe. Se for o seu caso:
+
+```bash
+uv tool upgrade specify-cli
+specify --version   # specify 1.2.0
+```
+
+Inicialize o Spec Kit no repositório:
+
+```bash
+specify init --here --integration claude --force --non-interactive
+```
+
+| Opção | Para quê |
+|---|---|
+| `--here` | usa a pasta atual em vez de criar uma nova |
+| `--integration claude` | instala os comandos como *skills* do Claude Code, em `.claude/skills/` |
+| `--force` | não pergunta "a pasta não está vazia, continuar?" |
+| `--non-interactive` | não abre menus; útil quando é o próprio Claude quem roda o comando |
+
+Apareceu isto no projeto:
+
+```text
+.specify/
+├── memory/constitution.md     # a constituição (por enquanto, um modelo vazio)
+├── templates/                 # modelos de spec, plano, tarefas e checklist
+├── scripts/powershell/        # scripts que os comandos usam por baixo dos panos
+└── workflows/                 # o fluxo padrão do Spec Kit
+.claude/skills/
+├── speckit-constitution/  speckit-specify/  speckit-clarify/
+├── speckit-plan/  speckit-checklist/  speckit-tasks/  speckit-analyze/
+├── speckit-implement/  speckit-converge/  speckit-taskstoissues/
+```
+
+O script de apoio foi escolhido sozinho: `ps` (PowerShell) no Windows e `sh` em macOS/Linux.
+
+Instale também a extensão de bugs, que não vem no pacote padrão:
+
+```bash
+specify extension info bug   # ver o que é antes de instalar
+specify extension add bug
+```
+
+Ela cria três comandos, `/speckit-bug-assess`, `/speckit-bug-fix` e `/speckit-bug-test`. Um aviso honesto: no meu laboratório eu **não usei** esse fluxo nos bugs reais da implementação (conto isso no [capítulo 11](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/11-deploy-local-e-retrospectiva/)). Se quiser reduzir ruído, pode pular a extensão.
+
+### 6. Instale o Superpowers
+
+O caminho mais simples é o marketplace oficial da Anthropic:
+
+```bash
+claude plugin install superpowers@claude-plugins-official --scope project
+```
+
+Eu fiz isso primeiro, e veio a versão **6.4.1**. A mais nova no GitHub era a **7.0.0**. Lendo as notas de versão, vi correções para Windows e para o modelo que eu estava usando (Opus 5.5), exatamente o meu ambiente. Então troquei para o marketplace do autor do plugin:
+
+```bash
+claude plugin uninstall superpowers@claude-plugins-official --scope project
+claude plugin marketplace add obra/superpowers-marketplace
+claude plugin install superpowers@superpowers-marketplace --scope project
+claude plugin list
+```
+
+Na lista deve aparecer `superpowers@superpowers-marketplace` na versão 7.0.0 (ou mais nova, quando você ler isto). Dá para fazer o mesmo dentro do Claude Code, com `/plugin marketplace add ...` e `/plugin install ...`.
+
+**Por que `--scope project`?** O plugin fica registrado em `.claude/settings.json`, que vai para o Git. Quem clonar o repositório recebe a oferta de instalar o mesmo plugin. Para isso o marketplace também é declarado no arquivo:
+
+```json
+{
+  "enabledPlugins": {
+    "superpowers@superpowers-marketplace": true
+  },
+  "extraKnownMarketplaces": {
+    "superpowers-marketplace": {
+      "source": { "source": "github", "repo": "obra/superpowers-marketplace" }
+    }
+  }
+}
+```
+
+### 7. Reinicie o Claude Code
+
+Skills e plugins só são carregados quando a sessão começa. Saia com `/exit` e abra de novo com `claude` (ou `claude --continue`, para retomar a conversa). Digite `/speckit` e confira se os comandos aparecem.
+
+### 8. Crie o repositório no GitHub
+
+Peça ao Claude em linguagem natural. Por baixo dos panos, ele roda algo assim:
+
+```bash
+git add .
+git commit -m "diario(00-01): setup do laboratorio e conexao com GitHub"
+gh repo create arkhos.labs.sdd.contract --private --source . --remote origin --push
+```
+
+Eu usei `--private` durante o desenvolvimento. Se você só quer acompanhar o tutorial, tanto faz. O `--source .` cria o repositório, configura o `origin` e já faz o push, tudo de uma vez.
+
+## O que esperar
+
+- `specify --version` mostra `1.2.0` (ou mais nova).
+- `claude plugin list` mostra o Superpowers 7.0.0 ou mais novo.
+- Depois de reiniciar, `/speckit` lista pelo menos `speckit-constitution`, `speckit-specify`, `speckit-clarify`, `speckit-plan`, `speckit-tasks`, `speckit-analyze` e `speckit-implement`.
+- A pasta tem `CLAUDE.md`, `.specify/`, `.claude/` e `docs/`, e o repositório existe no GitHub.
+
+## Se o seu deu diferente
+
+- **`specify --version` mostra uma versão antiga.** É o meu tropeço: `uv tool upgrade specify-cli`.
+- **Os comandos `/speckit` não aparecem.** Reinicie o Claude Code. Skills só carregam na abertura da sessão.
+- **O Superpowers entrega uma versão mais velha ou mais nova que a minha.** Pode acontecer: o plugin evolui. O nome dos comandos pode mudar um pouco. O que importa para o tutorial são os papéis (brainstorming, planos, TDD, subagentes), que se mantêm. Anote a sua versão.
+- **O `specify init` avisa para ignorar `.claude/` no Git.** Alguns agentes guardam credenciais ali. No meu caso eu **versionei** `.claude/settings.json` e `.claude/skills/` de propósito, e deixei o que é pessoal (`.claude/settings.local.json`) no `.gitignore`.
+- **O `uv` não está instalado ou o Python é diferente.** O `uv` cuida do Python para você. Instale pelo site oficial.
+
+**Para retomar do meu ponto:** `git clone https://github.com/leandropiga/arkhos.labs.sdd.contract.git` e `git checkout fase-0-setup`.
+
+## O que isso mostrou
+
+- Conferir a versão **depois** de instalar (`--version`, `plugin list`) me salvou do Spec Kit antigo e me levou ao Superpowers 7.
+- Ler as notas de versão foi o que me fez trocar de marketplace. Decisão pequena, mas vale o registro: no meu laboratório, toda divergência do plano original virou um ADR (registro curto de decisão), e o capítulo ganha o "porquê" de graça.
+- Colocar a regra de registro no `CLAUDE.md` transforma o hábito em padrão. O diário que alimenta este tutorial existe por causa dela.
+
+## Gancho
+
+Ferramentas instaladas, repositório criado, e nada ainda no ar. Mas uma coisa continua igual a antes: eu tenho só uma ideia solta de aplicação na cabeça. Ideia solta não é spec, e se eu pedir "faça um sistema de contratos" agora, o agente vai chutar o resto. No [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/03-ideacao/) eu mostro como transformei essa ideia numa visão de produto, e o que fiz com o texto que a IA me devolveu.
