@@ -22,6 +22,7 @@ export default defineConfig({
 				// Cada tutorial é um "topic": a barra lateral mostra só o tutorial atual.
 				starlightSidebarTopics([
 					{
+						id: 'sdd-na-pratica',
 						label: 'SDD na prática',
 						icon: 'open-book',
 						link: '/ia-no-desenvolvimento/sdd-na-pratica/',

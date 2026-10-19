@@ -1,6 +1,7 @@
 ---
 title: Fontes dos números citados
 description: De onde vem cada número do capítulo 01, com data, autoria e o que eu não consegui confirmar.
+topic: sdd-na-pratica
 sidebar:
   hidden: true
 ---
