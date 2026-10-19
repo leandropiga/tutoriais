@@ -1,0 +1,131 @@
+---
+title: "05. O momento 'não tinha pensado nisso'"
+description: O /speckit-clarify faz até cinco perguntas sobre a sua própria spec. Duas das minhas eu nem tinha pensado, e é por isso que essa etapa existe.
+---
+
+## Onde estamos
+
+Quinto capítulo, o mais importante do tutorial. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/04-constituicao-e-especificacao/) escrevemos a constituição e a especificação. Se você chegou direto aqui, precisa de uma spec em `specs/001-gestao-contratos-clientes/spec.md` com três marcadores `[NEEDS CLARIFICATION]` no texto.
+
+**Ponto de partida:** o commit `5415f2b` (a spec recém-criada, antes da clarificação). Não existe tag aqui, porque a fase 2 só fecha no fim deste capítulo.
+**Tag de chegada:** `fase-2-especificacao`.
+
+```bash
+git clone https://github.com/leandropiga/arkhos.labs.sdd.contract.git
+cd arkhos.labs.sdd.contract
+git checkout 5415f2b
+```
+
+## O que vamos fazer e por quê
+
+Toda dúvida que sobra na spec vira um **chute do agente** mais adiante. E chute em código custa caro para desfazer. A **clarificação** é a etapa que caça essas dúvidas antes: o `/speckit-clarify` lê a spec, procura ambiguidades e faz até **cinco perguntas**, uma de cada vez. Cada resposta entra direto no `spec.md`.
+
+Repare no que isso faz com uma resposta errada: ela vira requisito, depois vira teste, depois vira código. **Corrigir aqui custa uma letra. Corrigir depois custa um dia.**
+
+Eu cheguei a esta etapa achando que tinha pensado em tudo. Eu tinha três lacunas na cabeça (as que deixei de propósito) e imaginava que o comando ia perguntar essas três. Ele perguntou cinco. **Duas eu nem tinha pensado.**
+
+## Passo a passo
+
+### 1. Rodar o comando
+
+Sem texto nenhum, só o comando:
+
+```text
+/speckit-clarify
+```
+
+Por baixo dos panos, o agente roda um script para achar a spec ativa:
+
+```powershell
+.specify/scripts/powershell/check-prerequisites.ps1 -Json -PathsOnly
+```
+
+Ele lê o `.specify/feature.json` (criado pelo specify) e devolve o caminho da spec. Curiosidade: a saída mostra `"BRANCH": "001-gestao-contratos-clientes"`, mas continuei na `main`. O Spec Kit usa o nome da funcionalidade como "branch" mesmo quando não há branch de verdade.
+
+### 2. Responder às perguntas
+
+O agente varre a spec por categorias (modelo de dados, segurança, falhas de integração, UX...), escolhe as cinco dúvidas de maior impacto e pergunta uma por vez. Cada pergunta vem com uma **recomendação** e uma tabela de opções. Você responde com uma letra.
+
+Estas foram as minhas:
+
+| # | Pergunta | Recomendação do agente | Minha resposta |
+|---|---|---|---|
+| 1 | Como guardar o endereço, se o gráfico precisa da UF? | A: dividir em 5 campos | **A**: Logradouro, Número, CEP, Cidade e UF |
+| 2 | Qual o tamanho máximo do PDF? | A: 10 MB | **C: 100 MB** (⚠️ erro encenado, veja abaixo) |
+| 3 | Quanto esperar pela IA e como avisar a falha? | B: 60 s + toast | **A: 15 s + toast** |
+| 4 | O que acontece ao excluir cliente com contratos? | A: bloquear | **A**: bloqueia e diz quantos contratos existem |
+| 5 | O que fazer depois de várias senhas erradas? | A: pausa de 15 min | **A**: 5 erros seguidos, bloqueio de 15 min |
+
+Minhas respostas, em ordem: **A, C, A, A, A.**
+
+As perguntas 1, 2 e 3 são as lacunas que eu tinha deixado de propósito. As perguntas **4 e 5 o agente achou sozinho**: uma de modelo de dados (o que acontece com os contratos de um cliente excluído?) e uma de segurança (o que fazer quando alguém erra a senha várias vezes?). Eu tinha escrito 34 requisitos e não pensei em nenhum dos dois casos.
+
+Repare também que nas perguntas 2 e 3 eu **discordei da recomendação** do agente. A recomendação é um bom ponto de partida, não uma ordem. Quem decide é você.
+
+### 3. A cena dos 100 MB
+
+:::caution[⚠️ Erro encenado]
+O limite de 100 MB é **de propósito**. O Gemini aceita no máximo 50 MB por PDF, e eu não conto isso ao agente, porque quero ver o SDD resolver o conflito. Num projeto real, você conferiria os limites da API antes de responder.
+:::
+
+Na pergunta 2, minha primeira resposta foi **A** (10 MB), a recomendação do agente. Só que o meu roteiro pedia 100 MB, e essa decisão estava registrada no `CLAUDE.md` e num ADR. O agente **parou e pediu confirmação** antes de gravar: "com 10 MB, a cena do bug encenado deixa de existir; vale A ou C?". Eu respondi **C**, e os 100 MB entraram na spec.
+
+Moral: decisões escritas protegem você até de você mesmo. Sem o ADR, o agente teria gravado 10 MB sem pestanejar, e estaria certo do ponto de vista técnico.
+
+### 4. O que mudou na spec
+
+Cada resposta foi gravada logo depois de aceita, em dois lugares.
+
+1. Numa seção nova, `## Clarifications`, com o histórico:
+
+   ```markdown
+   ### Session 2026-10-14
+
+   - Q: Qual é o tamanho máximo permitido para o arquivo PDF de um contrato? → A: 100 MB.
+   ```
+
+2. Nas partes da spec afetadas pela resposta:
+
+   | Resposta | Onde entrou |
+   |---|---|
+   | Endereço em 5 campos | FR-007, FR-033, entidade Cliente |
+   | PDF até 100 MB | FR-017, casos extremos |
+   | 15 s + toast | FR-030, História 4, Premissas (o padrão de 60 s, chutado pelo specify, saiu) |
+   | Exclusão bloqueada | FR-010, História 2 (cenário novo), casos extremos |
+   | Bloqueio de login | FR-002, História 1 (cenário novo), SC-005 |
+
+O checklist de qualidade foi de 15/16 para **16/16**: não sobrou nenhum `[NEEDS CLARIFICATION]`.
+
+Duas dúvidas ficaram de fora por baixo impacto: como criar o primeiro usuário (já estava nas Premissas) e se CPF e RG devem ser mascarados nas listagens (LGPD). Nenhuma impedia o plano.
+
+## O que esperar
+
+- Cinco perguntas (ou menos), uma por vez, cada uma com recomendação e opções.
+- Uma seção `## Clarifications` no topo do `spec.md`, com data e as perguntas e respostas.
+- Requisitos e histórias ajustados conforme as respostas.
+- Checklist de qualidade completo e zero marcadores `[NEEDS CLARIFICATION]`.
+
+Para conferir: abra o `spec.md`, procure por `NEEDS CLARIFICATION` (não deve achar nada) e leia a seção `Clarifications`.
+
+## Se o seu deu diferente
+
+- **As suas perguntas são outras.** É o esperado. O agente escolhe as dúvidas de maior impacto a partir do **seu** texto e do contexto da hora. Responda às suas. O que vale é você ser surpreendido por pelo menos uma, e se isso não acontecer, ótimo: significa que sua spec estava boa.
+- **Ele fez menos de cinco perguntas.** Tudo bem. O limite é cinco.
+- **As recomendações foram diferentes das minhas.** Idem. Se quiser reproduzir o mesmo projeto, responda como eu respondi: **A, C, A, A, A** na ordem em que as mesmas perguntas aparecerem. Se a ordem for outra, responda pelo conteúdo: endereço em cinco campos, PDF de 100 MB, IA com 15 s e aviso, exclusão bloqueada, bloqueio de 15 min depois de cinco erros.
+- **Você quer corrigir o limite do PDF para 50 MB já agora.** Pode, mas aí você perde a cena do próximo capítulo, em que o plano descobre o conflito sozinho. Eu recomendo seguir com 100 MB para ver acontecer.
+- **A resposta não foi aplicada em todos os lugares.** Rode o comando de novo, ou peça ao agente para procurar no `spec.md` tudo que depende daquela resposta.
+
+Tag de chegada: `git checkout fase-2-especificacao`.
+
+## O que isso mostrou
+
+- **O clarify não é um formulário: ele descobre perguntas.** Duas das cinco não estavam no meu roteiro, e eram sobre segurança e integridade de dados.
+- **A recomendação do agente é um ponto de partida.** Eu discordei duas vezes.
+- **Uma resposta errada aqui vira requisito, que vira teste, que vira código.** Corrigir custa uma letra.
+- **Decisões registradas protegem.** O ADR segurou o agente (e a mim) no momento em que eu ia responder sem querer.
+
+Vale a pena parar um minuto aqui: no vibe coding, essas cinco perguntas teriam sido cinco decisões silenciosas, tomadas pelo modelo na hora de gerar código, sem eu saber que existiam. Eu só descobriria o bloqueio de login quando um teste ou um usuário mostrasse o furo.
+
+## Gancho
+
+A spec agora diz: **PDF de até 100 MB.** Parece razoável, e eu mesmo escolhi. Mas eu sei uma coisa que o agente não sabe: o serviço de IA que vai analisar esse PDF aceita só 50 MB. O que acontece quando o próximo comando, o `/speckit-plan`, olhar para esse número? Descubra no [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/06-o-plano-que-pegou-o-bug/).
