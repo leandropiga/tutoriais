@@ -1,0 +1,149 @@
+---
+title: 03. Ideação
+description: Como transformar uma ideia solta em uma visão de produto, e por que tratar texto de IA como rascunho de júnior.
+---
+
+## Onde estamos
+
+Terceiro capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/02-dois-frameworks-uma-escolha/) instalamos o Spec Kit e o Superpowers e criamos o repositório. Se você chegou direto aqui, o que importa é: tem um repositório com `CLAUDE.md`, `.specify/` e `docs/`, e as ferramentas instaladas.
+
+**Tag de partida:** `fase-0-setup`.
+**Tag de chegada:** `fase-1-ideacao`.
+
+```bash
+git clone https://github.com/leandropiga/arkhos.labs.sdd.contract.git
+cd arkhos.labs.sdd.contract
+git checkout fase-0-setup
+```
+
+## O que vamos fazer e por quê
+
+Antes de abrir o Spec Kit, vamos parar e pensar: **o que** vamos construir? Na **ideação** (a fase em que você ainda não escreve spec nem código) o resultado é um documento curto, não técnico, com a visão do produto: o problema, a solução em uma frase, quem usa, o que entra e o que fica de fora.
+
+Esse texto não é a spec. É o "papo de corredor" organizado, que depois alimenta o `/speckit-specify`. Em vibe coding, ele costuma ficar só na sua cabeça, e é por isso que o agente chuta o que você não disse.
+
+Uma coisa que eu aprendi cedo e que serve para você: **eu parti de um rascunho de tutorial gerado por IA** (o `TUTORIAL_DRAFT.md`, que está no repositório). Ele tinha comandos desatualizados e um "bug" que não se sustentava. Se eu tivesse copiado sem conferir, travava logo no `specify init`. Trate texto de IA como rascunho de um colega júnior: ótimo ponto de partida, mas confira as fontes.
+
+## Passo a passo
+
+### 1. Confira as versões antes de confiar em qualquer instrução
+
+Se você tem um guia (seu, de IA, de internet), confira os comandos com a fonte oficial. Foi o que eu fiz:
+
+```bash
+gh api repos/github/spec-kit/releases/latest --jq '.tag_name + " " + .published_at'
+# v1.2.0 2026-10-13T15:49:05Z
+
+gh api repos/obra/superpowers/releases/latest --jq '.tag_name + " " + .published_at'
+# v7.0.0 2026-10-10T00:28:58Z
+
+npm view @google/genai version
+# 2.29.1
+```
+
+A comparação do meu rascunho com a documentação oficial deu esta lista (a IA tinha errado ou desatualizado cada linha marcada):
+
+| O rascunho dizia | Situação | O que fiz |
+|---|---|---|
+| `uv tool install specify-cli --from git+...` | desatualizado | `uv tool install specify-cli` |
+| `specify init ... --ai claude` | desatualizado | `--integration claude` |
+| comandos `/speckit-constitution`, `/speckit-specify`... | certo | nada |
+| fluxo constitution, specify, clarify, plan, tasks | incompleto | existem também `checklist`, `analyze` e `converge` |
+| `/speckit-bug-assess` | existe, mas é extensão | `specify extension add bug` |
+| modelo `gemini-2.5-flash` | legado | `gemini-3.8-flash` |
+| `response.text()` | errado | `response.text` |
+| `version: '3.8'` no compose | obsoleto | remover |
+
+Todas as correções técnicas viraram o [ADR 0004](https://github.com/leandropiga/arkhos.labs.sdd.contract/blob/fase-1-ideacao/docs/decisoes/0004-atualizacoes-tecnicas-do-rascunho.md) no laboratório.
+
+### 2. Peça ao Claude para começar a fase
+
+O prompt que eu usei foi curto, porque o contexto já estava no `CLAUDE.md`:
+
+```text
+sim, vamos começar a Fase 1
+```
+
+O Claude conferiu o rascunho nas fontes oficiais e me fez perguntas de decisão. Sobre o deploy, a minha resposta foi:
+
+```text
+Vamos deixar local, mas seria legal no tutorial ter uma sugestão de deploy em um desses lugares.
+Apenas sugestão, sem instruções!
+```
+
+### 3. Escreva a visão do produto
+
+O jeito mais curto de **reproduzir o mesmo projeto** é copiar a visão do produto abaixo para `docs/ideacao/visao-do-produto.md`. Ela é o texto que eu escrevi nesta fase.
+
+Se você preferir ensaiar o que o capítulo ensina, escreva a sua para outro domínio, e acompanhe os próximos capítulos adaptando. Mas aí os prompts e os números das próximas etapas não vão bater com os meus.
+
+````markdown
+@@VISAO@@
+````
+
+Repare em três coisas nesse texto:
+
+1. É **não técnico**. Diz o quê e por quê. Nada de banco, framework ou rota.
+2. Tem uma seção "O que não entra". Dizer o que fica de fora poupa discussão depois.
+3. Termina com **perguntas em aberto, deixadas sem resposta de propósito**. Eu quis ver se o `/speckit-clarify` (que você vai conhecer no capítulo 05) achava essas lacunas sozinho.
+
+:::caution[⚠️ Erro encenado]
+Os **100 MB** de limite de PDF na seção "Mudanças que já sabemos que vão acontecer" **são de propósito**. O Gemini aceita no máximo 50 MB por PDF. Eu quis provocar esse conflito para mostrar como o SDD o resolve. Num projeto real, você leria os limites da API **antes** de escrever a spec. Aqui eu "esqueci" de propósito, e conto no capítulo 06 o que aconteceu de verdade.
+:::
+
+### 4. Decisões finais da fase
+
+No fim da fase sobraram três decisões. Esta foi a minha resposta ao Claude:
+
+```text
+1. Vamos fazer os dois.  Aumente nosso limite do PDF para forçar o problema com o gemini.  Isso
+precisa estar explicito no tutorial para que o leitor saiba que queremos simular o error para
+fins didaticos
+2. Vitest nos dois
+3. Remover as instruções do antigravity.  Tive uma ideia de lançar uma versão atualizada, bem
+depois, desse tutorial para antigravity
+```
+
+Resumo do que ficou decidido:
+
+- **Bugs reais e um encenado** (o dos 100 MB). Spoiler: o encenado nunca virou bug; o plano o pegou antes. Está no capítulo 06.
+- **Testes com Vitest no backend e no frontend**, em vez de Jest no backend: uma ferramenta só, com TypeScript e ESM nativos.
+- **Só Claude Code** neste tutorial. O que está aqui foi testado.
+
+### 5. Feche a fase com uma tag
+
+```bash
+git tag -a fase-1-ideacao -m "Fase 1 - Ideacao concluida"
+git push origin fase-1-ideacao
+```
+
+É assim que você volta a este ponto com `git checkout fase-1-ideacao`.
+
+## O que esperar
+
+- Um arquivo `docs/ideacao/visao-do-produto.md` com o texto acima (ou o seu).
+- Um ADR por decisão que contrariou o guia original, e o `CLAUDE.md` com uma seção "Desvios já decididos".
+- A tag `fase-1-ideacao` no remoto.
+- Nenhum código de aplicação ainda.
+
+Para conferir: abra a visão do produto e veja se alguém que nunca viu o projeto entende o que ele faz em dois minutos. Se precisar explicar oralmente, falta texto.
+
+## Se o seu deu diferente
+
+- **O Claude propôs outras decisões ou outra lista de correções.** Normal. O modelo pesquisa na hora, e a internet muda. Confira cada correção na fonte oficial antes de aceitar.
+- **O Claude fez menos (ou mais) perguntas.** Sem problema. O objetivo é fechar as decisões e deixar tudo registrado em ADR.
+- **Você não tem o rascunho.** Não precisa. Use a visão do produto acima como ponto de partida; ela substitui o rascunho para o resto do tutorial.
+- **Alguma versão ou comando mudou.** Confira com `--version` e com o README da ferramenta, e anote como "atualização" no seu diário.
+
+Para retomar do meu ponto: `git checkout fase-1-ideacao`.
+
+## O que isso mostrou
+
+- **Especificação ruim gera código ruim.** Isso vale também para o guia que você usa para aprender.
+- **IA com pesquisa erra e a internet muda rápido.** Eu só achei as divergências porque comparei o rascunho com a fonte oficial.
+- **Para provocar um erro de propósito, é preciso entender o sistema tão bem quanto para evitá-lo.** Eu quase errei a cena do "bug encenado": a pesquisa inicial dizia que o limite de 50 MB valia só para envio direto, e que trocar para a File API do Gemini resolveria. Lendo com mais calma, o limite vale para **qualquer** forma de envio. Redesenhei a cena: a causa raiz deixou de ser "inline contra File API" e virou "a spec contradiz um limite do fornecedor", que é um aprendizado de SDD mais útil.
+- **Decisões que contrariam o guia ficam no `CLAUDE.md`.** Assim o agente não volta para a versão antiga sem perceber.
+
+## Gancho
+
+A visão do produto diz o que eu quero, mas não tem **regra nenhuma**. Não diz que testes são obrigatórios, que o arquivo temporário precisa ser apagado mesmo se der erro, nem como a senha deve ser guardada. Isso fica a cargo de cada pedido ao agente, que é exatamente o problema do vibe coding. No [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/04-constituicao-e-especificacao/) eu escrevo as regras que valem para o projeto inteiro, a **constituição**, e depois a **especificação**.
