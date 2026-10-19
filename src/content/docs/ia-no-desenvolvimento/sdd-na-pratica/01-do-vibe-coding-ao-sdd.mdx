@@ -1,0 +1,87 @@
+---
+title: 01. Do vibe coding ao SDD
+description: O que é Spec-Driven Development, o que ele muda em relação ao vibe coding e o que a evidência diz de verdade, sem propaganda.
+---
+
+## Onde estamos
+
+Este é o primeiro capítulo. Se você chegou aqui direto, a [visão geral](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/) explica o que vamos construir e como o tutorial funciona. Aqui ainda não tem código: é o capítulo que explica **por que** o resto existe.
+
+Tag de partida: nenhuma. Não precisa clonar nada ainda.
+
+## O que vamos fazer e por quê
+
+Você já usa IA para programar. Provavelmente do jeito que quase todo mundo começa: descreve o que quer, recebe código, ajusta até funcionar, segue em frente. Isso tem nome, **vibe coding**, e funciona bem para um script, um protótipo, uma tarefa pequena.
+
+O problema aparece quando o que você pede tem regras que só existem na sua cabeça. A IA não tem como adivinhar que o CPF não pode repetir, que o upload precisa ser apagado mesmo se der erro, ou que a API externa só aceita 50 MB. Ela chuta. Você descobre o chute depois, no código, que é o lugar mais caro para descobrir.
+
+**SDD (Spec-Driven Development, desenvolvimento guiado por especificação)** inverte a ordem: antes de pedir código, você escreve **o que** o sistema deve fazer, numa especificação (a *spec*). A spec vira a fonte da verdade, e o código passa a ser consequência dela. Quando a spec muda, o código acompanha, e não o contrário.
+
+Em uma tabela, a diferença de rotina fica assim:
+
+| | Vibe coding | SDD |
+|---|---|---|
+| Ponto de partida | Um prompt com o que você quer agora | Uma spec escrita e revisada |
+| Onde as dúvidas aparecem | No código, quando algo quebra | No documento, antes do código |
+| O que guia a IA | O seu prompt do momento | Regras e spec que ficam no repositório |
+| Como você sabe que acabou | "Parece que funciona" | Critérios escritos, viram teste |
+| Custo de corrigir um erro de entendimento | Reescrever código | Mudar uma linha de texto |
+
+Isso não é de graça. SDD gasta tempo e tokens em documentos antes da primeira linha de código. O resto do tutorial existe para você ver, numa aplicação de verdade, se esse custo se paga.
+
+## Passo a passo
+
+Antes de instalar qualquer coisa, um exercício de dois minutos. Ele mostra o problema sem precisar de ferramenta nenhuma.
+
+1. Pegue uma funcionalidade que você pediu para a IA na última semana, em vibe coding.
+2. Abra o código que ela gerou e liste **cada decisão** que ele tomou e que o seu prompt não pedia: limite de tamanho, o que fazer em caso de erro, formato de mensagem, o que acontece com dados duplicados, o que acontece quando a rede cai.
+3. Para cada item, responda: eu concordaria com essa decisão se tivesse sido perguntado?
+
+Anote o resultado. Se você é como eu fui, a lista passa de cinco itens, e pelo menos um você teria decidido diferente.
+
+Cada item dessa lista é o que o SDD chama de **ambiguidade**: um ponto da spec que, sem resposta, vira chute. As etapas do SDD que você vai ver nos próximos capítulos existem para achar esses pontos antes do código.
+
+## O que esperar
+
+Uma lista curta de decisões implícitas, e a sensação de que você faz esse trabalho de qualquer forma, só que no fim e sem registro. É isso que o SDD tenta puxar para o começo.
+
+Não há nada para conferir com comando neste capítulo. O critério é a sua própria lista.
+
+## Se o seu deu diferente
+
+- **"Minha lista ficou com um ou dois itens."** Tudo bem. Pegue uma funcionalidade maior, com validação, erro e integração externa. Em tarefa pequena, o vibe coding vai bem mesmo.
+- **"Concordei com todas as decisões."** Também é um resultado. Vibe coding funciona quando o domínio é conhecido e o risco de errar é baixo. O SDD vale mais onde o erro custa caro.
+
+Tag de chegada: nenhuma neste capítulo.
+
+## O que isso mostrou
+
+### O que a evidência diz (e o que ela não diz)
+
+Eu fui procurar números de empresas que usam esse tipo de processo. Abri as fontes originais, e deixei **fora** o que não consegui confirmar. A lista completa, com data e autoria de cada cifra, está em [fontes dos números](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/fontes/).
+
+O que existe:
+
+- **O GitHub lançou o Spec Kit em 2 de setembro de 2025** e chamou de "nosso experimento". A licença é MIT. O texto de lançamento define a spec como "a fonte da verdade" e **não traz nenhum número de ganho**.
+- **A AWS diz** que mais de 100 mil desenvolvedores experimentaram o Kiro, o editor dela com fluxo de specs, nos cinco primeiros dias da prévia, e relata um cliente (Siemens) que fez em duas semanas, com um arquiteto, um projeto de três a quatro meses. São números **da empresa sobre o próprio produto**, publicados em 14 de julho de 2026. Leia como marketing, mesmo que seja verdade.
+- **Um estudo de caso em preprint** (arXiv, maio de 2026, sem revisão por pares) conta o caso de um engenheiro sênior com quatro agentes sob SDD: entrega em metade do tempo planejado e 90% do código gerado aceito na primeira revisão. É **um caso**, escrito pelos próprios envolvidos.
+
+O que **não** existe: um estudo controlado e independente que meça o ganho do SDD especificamente. Eu procurei.
+
+### O contrapeso
+
+O estudo mais sólido que eu achei sobre IA e produtividade é de outro tipo, e vai contra a intuição. A METR, uma organização de pesquisa, acompanhou 16 desenvolvedores experientes em 246 tarefas reais de repositórios que eles conheciam bem. Com IA liberada, eles levaram **19% mais tempo**. Antes do estudo, esperavam ganhar 24%. Depois, ainda **achavam** que tinham ganhado 20%.
+
+Duas ressalvas, que a própria METR faz: foi uma amostra pequena, num cenário específico, com ferramentas do começo de 2025; e a página avisa que os resultados estão desatualizados, com dados novos de 2026. Eu não uso o estudo para dizer "IA atrapalha". Uso para dizer uma coisa mais modesta: **a sensação de estar ganhando velocidade é um mau medidor**. Se a sensação engana, vale ter um processo que deixe rastro.
+
+### O que eu espero (e o que não espero)
+
+Não espere um multiplicador. Eu não medi um. O que eu vi no meu laboratório foi outra coisa: **decisões achadas cedo**. Nos próximos capítulos você vai ver, com exemplos do próprio projeto, um limite de tamanho que a spec errou e o plano pegou, uma falha de segurança que a análise achou antes de existir código, e perguntas que eu nem sabia que precisava responder.
+
+Isto é parte dos meus estudos. Pode ser que, no seu projeto, o balanço seja diferente.
+
+## Gancho
+
+Na fase de esclarecimento deste projeto, o agente me fez cinco perguntas sobre a minha própria spec. Três eu já esperava. **Duas eu nem tinha pensado.** Mais adiante você vai ver exatamente quais, e por que isso importa.
+
+Antes, uma decisão que parece detalhe e não é: este tutorial usa **dois** frameworks de SDD ao mesmo tempo, e não um. No [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/02-dois-frameworks-uma-escolha/) eu explico por quê, e instalamos os dois.
