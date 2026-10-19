@@ -5,15 +5,15 @@ description: "Como executar o tasks.md com o Superpowers, usando worktree, um su
 
 ## Onde estamos
 
-Oitavo capítulo. Até aqui só escrevemos documentos. Se você chegou direto, precisa de um repositório com a constituição, a spec esclarecida, o plano e o `tasks.md` (78 tarefas, já analisado), e o Superpowers instalado.
+Oitavo capítulo. Até aqui só escrevemos documentos. Se você chegou direto, precisa de um repositório com a constituição, a spec esclarecida, o plano e o `tasks.md` (78 tarefas, já analisado, no commit `ce6ba96`), e o Superpowers instalado.
 
-**Tag de partida:** `fase-4-tarefas`.
+**Ponto de partida:** o commit `ce6ba96` (tarefas analisadas, mais o ADR 0010 e o prompt da rodada 1).
 **Tag de chegada:** `fase-5a-rodada-1` (o fim da primeira rodada, tarefas T001 a T035).
 
 ```bash
 git clone https://github.com/leandropiga/arkhos.labs.sdd.contract.git
 cd arkhos.labs.sdd.contract
-git checkout fase-4-tarefas
+git checkout ce6ba96
 ```
 
 ## O que vamos fazer e por quê
@@ -123,7 +123,7 @@ frontend/  npx vitest run   -> Test Files  6 passed (6)  | Tests 27 passed (27)
 
 ### 5. Os Rulings
 
-Este é o material mais valioso da rodada. É o tipo de decisão que a IA toma **sem te chamar**. Algumas das mais de 30 que o ledger registrou:
+Este é o material mais valioso da rodada. É o tipo de decisão que a IA toma **sem te chamar**. Algumas das 30 que o ledger registrou:
 
 | Decisão | Custo se errado |
 |---|---|
@@ -165,7 +165,7 @@ Para conferir: rode `npx vitest run` em `backend/` e em `frontend/`. Se passar, 
 Eu não medi tokens (veja a visão geral do tutorial). Mas posso dizer onde o gasto está: um implementador **e** dois revisores por tarefa, com contexto novo cada vez, mais a revisão final. As alternativas, em ordem de custo:
 
 1. **`/speckit-implement`** do próprio Spec Kit: o mais simples e barato; abre mão da disciplina e da revisão.
-2. **Superpowers inline (`executing-plans`)**: você faz as tarefas na própria sessão com TDD, e há **uma** revisão no fim. Mais barato, mas sem contexto limpo por tarefa nem revisão por tarefa.
+2. **Superpowers inline (`executing-plans`)**: você faz as tarefas na própria sessão com TDD, e uma revisão da branch no fim. Mais barato, mas sem contexto limpo por tarefa nem revisão por tarefa.
 3. **O que eu usei**: subagente por tarefa, revisão por tarefa e revisão final.
 
 Eu usei a terceira porque quis ver o que a revisão por tarefa pega. Se o seu projeto é pequeno, a segunda é uma escolha razoável. Essa decisão está registrada no laboratório como um ADR, com as quatro opções.

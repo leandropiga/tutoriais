@@ -7,13 +7,13 @@ description: Como transformar uma ideia solta em uma visão de produto, e por qu
 
 Terceiro capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/02-dois-frameworks-uma-escolha/) instalamos o Spec Kit e o Superpowers e criamos o repositório. Se você chegou direto aqui, o que importa é: tem um repositório com `CLAUDE.md`, `.specify/` e `docs/`, e as ferramentas instaladas.
 
-**Tag de partida:** `fase-0-setup`.
+**Ponto de partida:** o commit `9672266` (setup do laboratório e conexão com o GitHub, ainda sem o Spec Kit; no laboratório a instalação veio depois da ideação, veja a nota no capítulo 02).
 **Tag de chegada:** `fase-1-ideacao`.
 
 ```bash
 git clone https://github.com/leandropiga/arkhos.labs.sdd.contract.git
 cd arkhos.labs.sdd.contract
-git checkout fase-0-setup
+git checkout 9672266
 ```
 
 ## O que vamos fazer e por quê
@@ -70,6 +70,10 @@ O Claude conferiu o rascunho nas fontes oficiais e me fez perguntas de decisão.
 Vamos deixar local, mas seria legal no tutorial ter uma sugestão de deploy em um desses lugares.
 Apenas sugestão, sem instruções!
 ```
+
+:::note[Estes dois prompts dependem de contexto]
+"sim, vamos começar a Fase 1" só funcionou porque o meu `CLAUDE.md` completo lista as fases do laboratório e o rascunho `TUTORIAL_DRAFT.md` estava no repositório. A resposta do passo 4 também responde a perguntas específicas que o meu agente fez. O seu agente não vai perguntar igual. Se você não tem esse contexto, pule os dois e vá direto ao passo 3: a visão do produto é o que importa para seguir adiante.
+:::
 
 ### 3. Escreva a visão do produto
 

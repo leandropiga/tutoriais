@@ -8,7 +8,7 @@ description: Quebrar o plano em tarefas com critério de pronto e usar o /specki
 Sétimo capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/06-o-plano-que-pegou-o-bug/) o plano técnico saiu e corrigiu o limite do PDF para 50 MB. Se você chegou direto aqui, precisa dos cinco documentos do plano em `specs/001-gestao-contratos-clientes/`: `plan.md`, `research.md`, `data-model.md`, `contracts/api.md` e `quickstart.md`.
 
 **Tag de partida:** `fase-3-planejamento`.
-**Tag de chegada:** `fase-4-tarefas`.
+**Ponto de chegada:** o commit `922c9dd` (tarefas analisadas e corrigidas). A tag `fase-4-tarefas` do laboratório aponta para `f7bae43`, logo depois de gerar as tarefas e **antes** da análise.
 
 ```bash
 git clone https://github.com/leandropiga/arkhos.labs.sdd.contract.git
@@ -147,12 +147,9 @@ Nenhuma correção mudou a numeração das tarefas, e nenhum comando precisou se
 
 No meu caso: **zero achados.** Cobertura de 100% dos 40 requisitos, nenhum conflito com a constituição, 78 tarefas no formato certo. Rodar de novo é a prova de que a correção não abriu outro buraco.
 
-### 9. Feche a fase com uma tag
+### 9. Registre o ponto
 
-```bash
-git tag -a fase-4-tarefas -m "Fase 4 - Tarefas concluida"
-git push origin fase-4-tarefas
-```
+Commite as correções e a segunda análise limpa. Esse commit é o fim da fase 4. (No meu laboratório a tag `fase-4-tarefas` ficou um commit antes, em `f7bae43`; o ponto completo é `922c9dd`.)
 
 ## O que esperar
 
@@ -170,7 +167,7 @@ Para conferir: depois da segunda análise, o relatório deve dizer que não há 
 - **A análise sugeriu mudar a constituição.** Pode ser o certo. Mas faça isso de forma explícita, com o `/speckit-constitution` e um registro da decisão, e não aceite um conflito calado.
 - **O analyze apontou o vazamento do usuário no login e você quer proteger também.** Pode. Vale uma tarefa e um teste a mais. Eu aceitei o risco por escrito porque o sistema tem um único usuário.
 
-Para retomar do meu ponto: `git checkout fase-4-tarefas`.
+Para retomar do meu ponto: `git checkout 922c9dd`.
 
 ## O que isso mostrou
 

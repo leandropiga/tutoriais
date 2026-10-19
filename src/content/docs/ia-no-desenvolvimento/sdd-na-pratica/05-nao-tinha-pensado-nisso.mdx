@@ -1,6 +1,6 @@
 ---
 title: "05. O momento 'não tinha pensado nisso'"
-description: O /speckit-clarify faz até cinco perguntas sobre a sua própria spec. Duas das minhas eu nem tinha pensado, e é por isso que essa etapa existe.
+description: O /speckit-clarify faz até cinco perguntas sobre a sua própria spec. Uma delas eu nem tinha pensado, e é por isso que essa etapa existe.
 ---
 
 ## Onde estamos
@@ -22,7 +22,7 @@ Toda dúvida que sobra na spec vira um **chute do agente** mais adiante. E chute
 
 Repare no que isso faz com uma resposta errada: ela vira requisito, depois vira teste, depois vira código. **Corrigir aqui custa uma letra. Corrigir depois custa um dia.**
 
-Eu cheguei a esta etapa achando que tinha pensado em tudo. Eu tinha três lacunas na cabeça (as que deixei de propósito) e imaginava que o comando ia perguntar essas três. Ele perguntou cinco. **Duas eu nem tinha pensado.**
+Eu cheguei a esta etapa achando que tinha pensado em tudo. Eu tinha três lacunas na cabeça (as que deixei de propósito) e imaginava que o comando ia perguntar essas três. Ele perguntou cinco. **Uma eu realmente não tinha pensado** (o bloqueio do login), e outra eu tinha deixado em aberto sem saber que ia aparecer.
 
 ## Passo a passo
 
@@ -58,7 +58,7 @@ Estas foram as minhas:
 
 Minhas respostas, em ordem: **A, C, A, A, A.**
 
-As perguntas 1, 2 e 3 são as lacunas que eu tinha deixado de propósito. As perguntas **4 e 5 o agente achou sozinho**: uma de modelo de dados (o que acontece com os contratos de um cliente excluído?) e uma de segurança (o que fazer quando alguém erra a senha várias vezes?). Eu tinha escrito 34 requisitos e não pensei em nenhum dos dois casos.
+As perguntas 1, 2 e 3 são as lacunas que eu tinha deixado de propósito. As perguntas **4 e 5 o agente achou sozinho**: uma de modelo de dados (o que acontece com os contratos de um cliente excluído?) e uma de segurança (o que fazer quando alguém erra a senha várias vezes?). Sendo preciso: a pergunta 4 já estava na minha lista de dúvidas em aberto da visão do produto, e o `/speckit-specify` até a tinha marcado como `[NEEDS CLARIFICATION]` (FR-010), mas não estava no meu roteiro de respostas. A pergunta 5, a do bloqueio de login, **essa eu realmente não tinha pensado**: eu tinha escrito 34 requisitos e nenhum falava de tentativas repetidas.
 
 Repare também que nas perguntas 2 e 3 eu **discordei da recomendação** do agente. A recomendação é um bom ponto de partida, não uma ordem. Quem decide é você.
 
@@ -119,7 +119,7 @@ Tag de chegada: `git checkout fase-2-especificacao`.
 
 ## O que isso mostrou
 
-- **O clarify não é um formulário: ele descobre perguntas.** Duas das cinco não estavam no meu roteiro, e eram sobre segurança e integridade de dados.
+- **O clarify não é um formulário: ele descobre perguntas.** Duas das cinco não estavam no meu roteiro de respostas, e uma delas (o bloqueio do login) eu não tinha pensado de jeito nenhum.
 - **A recomendação do agente é um ponto de partida.** Eu discordei duas vezes.
 - **Uma resposta errada aqui vira requisito, que vira teste, que vira código.** Corrigir custa uma letra.
 - **Decisões registradas protegem.** O ADR segurou o agente (e a mim) no momento em que eu ia responder sem querer.

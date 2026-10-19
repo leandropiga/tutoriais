@@ -1,6 +1,6 @@
 ---
 title: 09. Revisão em camadas e Rulings
-description: As rodadas 2 a 6 e o que só a revisão final da branch achou, três vezes. Mais os Rulings, que são as decisões que a IA toma sem te chamar.
+description: As rodadas 2 a 6 e o que só a revisão final da branch achou (rodadas 1, 2 e 7) e o que as revisões por tarefa pegaram. Mais os Rulings, que são as decisões que a IA toma sem te chamar.
 ---
 
 ## Onde estamos
@@ -49,6 +49,12 @@ inicie a rodada 2
 pode seguir, me avise só ao fim da T046
 ```
 
+Depois da rodada, ainda mandei:
+
+```text
+corrija o NUL e escreva o diário
+```
+
 O agente deduziu sozinho o que faltava dizer:
 
 | Faltava dizer | De onde veio |
@@ -59,6 +65,8 @@ O agente deduziu sozinho o que faltava dizer:
 | `.env` locais, Docker | diário anterior e `backend/.env.example` |
 
 **Um `CLAUDE.md` e um ADR bons valem mais que um prompt comprido.**
+
+Atenção: esse prompt curto só funciona porque o meu repositório tem essas regras escritas. O `CLAUDE.md` enxuto do capítulo 02 não tem o quadro de rodadas. Para seguir igual, copie do laboratório (tag `fase-5a-rodada-1`) o `CLAUDE.md` completo e o ADR 0010, ou escreva o escopo por extenso: "Execute as tarefas T036 a T046 do tasks.md com o subagent-driven-development, num worktree em .worktrees/, e pare ao concluir a T046". Essa última frase é uma adaptação minha, não um prompt do laboratório.
 
 ### 2. Prepare o worktree de cada rodada
 
@@ -77,13 +85,13 @@ Ajuste o nome da branch para a rodada. E **rode a suíte antes de mexer**, para 
 
 ### 3. O que as revisões pegaram, rodada a rodada
 
-Três vezes a revisão final achou algo que as revisões por tarefa tinham deixado passar. Cada uma ilustra uma lição.
+Nas rodadas 1, 2 e 7 (esta última no próximo capítulo), a revisão final achou algo que as revisões por tarefa tinham deixado passar. Na rodada 4, quem pegou os defeitos foram as próprias revisões por tarefa. Cada caso ilustra uma lição.
 
 **Rodada 1 (capítulo anterior): bloqueio de login furado por concorrência.** Cinquenta tentativas simultâneas foram todas verificadas, contra o critério de que o bloqueio vale após cinco erros. Cada tarefa estava certa sozinha; o furo morava na costura.
 
 **Rodada 2: mensagens duplicadas.** O zod 4 não interrompe a cadeia de checagens. Um RG vazio devolvia "Informe o RG." **e** "O RG deve ter ao menos 1 caracteres." para o mesmo campo, na resposta pública da API. Quase invisível na tela (o formulário barra o vazio antes), mas com português errado. O defeito passou por **três** revisões de tarefa; só o olhar de conjunto, com um script que provou o caso, o tornou relevante. Na mesma onda: um byte NUL num campo de texto dava erro 500 (o Postgres recusa; passou a ser 400).
 
-**Rodada 2, versão 2: a correção do NUL criou um problema novo.** O agente escreveu o byte NUL **literal** dentro do código, em vez do escape `'\u0000'`. O Git passou a tratar o arquivo como binário e o arquivo foi regravado em CRLF; o diff virou "Binary files differ". Uma re-revisão **só do diff das correções** pegou, e o conserto foi trocar o byte pelo escape e regravar em LF:
+**Rodada 2, versão 2: a correção do NUL criou um problema novo.** O agente escreveu o byte NUL **literal** dentro do código, em vez do escape `'\u0000'`. O Git passou a tratar o arquivo como binário e o arquivo foi regravado em CRLF; o diff virou "Binary files differ". Uma re-revisão **só do diff das correções** (não a revisão final) pegou, e o conserto foi trocar o byte pelo escape e regravar em LF:
 
 ```bash
 git ls-files --eol backend/src/modules/clientes/esquemas-clientes.ts
@@ -92,7 +100,7 @@ git ls-files --eol backend/src/modules/clientes/esquemas-clientes.ts
 
 A lição: **correção também precisa de revisão.** Sem a re-revisão, o problema teria ido para a `main`.
 
-**Rodada 4: o mock que esconde o bug.** O aviso de "IA fora do ar" mostrava a mensagem que vinha do backend, diferente do texto que a spec manda. O teste não pegava, porque o mock já devolvia o texto certo. O teste só ficou honesto quando o mock passou a devolver a mensagem **real** do backend. Um teste verde nem sempre é um teste honesto.
+**Rodada 4: o mock que esconde o bug** (pego pela revisão da tarefa). O aviso de "IA fora do ar" mostrava a mensagem que vinha do backend, diferente do texto que a spec manda. O teste não pegava, porque o mock já devolvia o texto certo. O teste só ficou honesto quando o mock passou a devolver a mensagem **real** do backend. Um teste verde nem sempre é um teste honesto.
 
 Na mesma rodada, duas corridas (a análise de um PDF antigo sendo gravada como se fosse do novo; e o `finally` liberando a trava de qualquer análise, não só a própria) e uma data no dia errado (cortada em UTC; no Brasil, UTC-3, uma análise às 22h30 aparecia no dia seguinte). **As corridas foram achadas lendo, não rodando.**
 
@@ -137,7 +145,7 @@ cd frontend && npm run build && grep -ri GEMINI dist   # deve voltar vazio
 ## Se o seu deu diferente
 
 - **Os seus achados são outros, ou a revisão final não achou nada.** Esperado: o código gerado varia. O que importa é manter as duas camadas de revisão e **ler** a revisão final. Se ela voltar vazia sempre, desconfie do prompt do revisor.
-- **O limite de uso da API derrubou o revisor no meio do trabalho.** Aconteceu comigo. O agente derrubado guarda o que fez; quando o limite liberou, mandei uma mensagem ao mesmo agente para continuar de onde parou.
+- **O limite de uso da API derrubou o revisor no meio do trabalho.** Aconteceu comigo. O agente derrubado guarda o que fez; quando o limite liberou, disse só "pode seguir" e o agente retomou o revisor do ponto onde parou.
 - **O `task-brief` da skill deu "task N not found".** O script procura títulos "Task N" e o `tasks.md` do Spec Kit usa `T036`. Eu montei os pedidos à mão, copiando as linhas das tarefas. É um atrito de juntar as duas ferramentas; aceite o pedido manual desde o começo.
 - **Retomada depois de uma sessão interrompida.** Leia o ledger e o `git log`: o que está lá existe. Foi o que me salvou na rodada 3, em que o trabalho começou numa sessão anterior. Sem o ledger, eu teria refeito tarefas prontas.
 - **O agente criou arquivo temporário fora do worktree.** Aconteceu na rodada 2 (ele mesmo apagou). Mesma lição do capítulo anterior: diga o que ele **não** pode fazer.
@@ -147,7 +155,7 @@ Para retomar do meu ponto: `git checkout fase-5-implementacao`.
 
 ## O que isso mostrou
 
-- **Revisão em camadas se paga.** A de tarefa pega defeitos locais; a final pega o que só se vê no conjunto. Nos três casos, cada peça estava certa sozinha, e o problema morava na costura.
+- **Revisão em camadas se paga.** A de tarefa pega defeitos locais; a final pega o que só se vê no conjunto. Nos casos da revisão final, cada peça estava certa sozinha, e o problema morava na costura.
 - **Concorrência é onde a revisão mais paga.** Ler achou o que rodar não achou.
 - **Correção também precisa de revisão.**
 - **Mock que devolve a resposta certa esconde o bug.**
