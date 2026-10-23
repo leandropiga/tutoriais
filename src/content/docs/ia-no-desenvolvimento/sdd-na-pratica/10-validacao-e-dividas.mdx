@@ -136,7 +136,7 @@ No macOS/Linux, basta `Ctrl+C` no terminal do backend e `npm run dev` outra vez.
 
 ### 6. A rodada 7: fechar as cinco dívidas
 
-Essas cinco tarefas não estavam no `tasks.md` original. Eu criei uma "Fase 10: Dívidas técnicas antes do deploy" (T079 a T083), para a rodada ter escopo explícito, como manda o ADR de implementação. Divergir do plano está certo, desde que fique escrito.
+Essas cinco tarefas não estavam no `tasks.md` original. Eu criei uma "Fase 10: Dívidas técnicas antes do deploy" (T079 a T083), para a rodada ter escopo explícito, como manda o ADR de implementação por rodadas. Divergir do plano está certo, desde que fique escrito.
 
 | Tarefa | O problema | A correção |
 |---|---|---|
@@ -192,9 +192,9 @@ A rodada 7 foi mergeada na `main` como um commit de etapa à parte (`4ae7ba1`).
 
 - **O passo 9 devolve "serviço indisponível".** Leia o log do backend antes de qualquer coisa. Se for 503 do Google, espere e repita. Se for 400 ou 403, a chave está errada ou sem permissão.
 - **Você não tem chave do Gemini.** Pule os passos 9 e 11. O resto do roteiro vale.
-- **O modelo do Gemini do plano (`gemini-3.8-flash`) não existe mais ou mudou.** Serviço externo muda. Troque pelo modelo equivalente atual, anote no seu diário e rode o passo 9 de novo.
+- **O modelo do Gemini do plano (`gemini-3.8-flash`) não existe mais ou mudou.** Serviço externo muda. Troque pelo modelo equivalente atual, registre num ADR e rode o passo 9 de novo.
 - **A troca de chave no passo 11 não surtiu efeito.** Reinicie o backend. O `.env` só é lido na partida.
-- **A sua lista de dívidas é outra.** Normal. Escolha as que mexem com produção ou segurança e deixe as outras anotadas. Anotada não é paga: eu deixei vários itens em aberto, de propósito (acessibilidade do menu de perfil e do gráfico, "tentar de novo" na Home, alguns testes menores). A lista completa está no fim da entrada 18 do diário do laboratório.
+- **A sua lista de dívidas é outra.** Normal. Escolha as que mexem com produção ou segurança e deixe as outras anotadas. Anotada não é paga: eu deixei vários itens em aberto, de propósito (acessibilidade do menu de perfil e do gráfico, "tentar de novo" na Home, alguns testes menores).
 - **Os números de tamanho do bundle são diferentes.** Dependem das versões. O que vale é o aviso sumir e o carregamento inicial ficar abaixo dos 500 kB.
 
 Para retomar do meu ponto: `git checkout fase-6-validacao` (depois da validação) ou `git checkout 4ae7ba1` (depois da rodada 7).

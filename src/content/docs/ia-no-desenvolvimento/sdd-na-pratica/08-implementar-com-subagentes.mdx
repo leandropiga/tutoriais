@@ -7,7 +7,7 @@ description: "Como executar o tasks.md com o Superpowers, usando worktree, um su
 
 Oitavo capítulo. Até aqui só escrevemos documentos. Se você chegou direto, precisa de um repositório com a constituição, a spec esclarecida, o plano e o `tasks.md` (78 tarefas, já analisado, no commit `ce6ba96`), e o Superpowers instalado.
 
-**Ponto de partida:** o commit `ce6ba96` (tarefas analisadas, mais o ADR 0010 e o prompt da rodada 1).
+**Ponto de partida:** o commit `ce6ba96` (tarefas analisadas, mais o ADR com as regras de implementação por rodadas e o prompt da rodada 1).
 **Tag de chegada:** `fase-5a-rodada-1` (o fim da primeira rodada, tarefas T001 a T035).
 
 ```bash
@@ -31,7 +31,7 @@ Termos que vão aparecer:
 
 - **Rodada.** Um pedaço do `tasks.md` com escopo explícito ("de T001 a T035"). O Superpowers 7 **não pausa sozinho** entre tarefas; o tamanho da rodada é o seu ponto de revisão.
 - **Worktree.** Uma segunda cópia de trabalho do mesmo repositório, em outra pasta e outra branch. O agente trabalha ali e a sua `main` fica intocada.
-- **Ledger.** O diário de bordo do agente, em `.superpowers/sdd/`, **fora do Git**. É o mapa de recuperação se a conversa for interrompida.
+- **Ledger.** O caderno de bordo do agente, em `.superpowers/sdd/`, **fora do Git**. É o mapa de recuperação se a conversa for interrompida.
 - **Ruling.** Uma decisão que o agente tomou sozinho diante de uma ambiguidade, escrita no formato `Ruling: decisão, motivo, custo se estiver errada`. Em vez de parar e perguntar a cada dúvida, ele decide e registra.
 
 :::note[Isto é parte dos meus estudos]
@@ -85,7 +85,7 @@ Regras:
    não vão para o Git. GEMINI_API_KEY pode ser um valor fictício: nenhum teste chama a API real.
 10. Pare e me pergunte antes de: merge na main, push, ou qualquer ação fora do worktree.
 11. Ao terminar a rodada: rode as suítes de teste completas do backend e do frontend e mostre a
-    saída, e liste todos os Rulings do ledger. Vou copiá-los para o diário.
+    saída, e liste todos os Rulings do ledger para eu revisar.
 ```
 
 Depois do primeiro pedido, a única outra mensagem minha no meio foi: "pode seguir, me avise só ao fim da T035".
@@ -149,7 +149,7 @@ Cada uma foi corrigida com o teste escrito antes.
 
 ### 7. Mergear e fechar a rodada
 
-O agente parou, como pedi. Revisei, e o merge na `main` (com push) foi o "commit de etapa" da rodada. A tag `fase-5a-rodada-1` aponta para esse ponto no laboratório. Eu a criei depois, só para este tutorial: no andamento real do laboratório, a tag oficial da fase 5 só sai na última rodada.
+O agente parou, como pedi. Revisei, e o merge na `main` (com push) foi o "commit de etapa" da rodada. A tag `fase-5a-rodada-1` marca esse ponto no laboratório. Crie uma tag parecida no seu repositório para poder voltar aqui. A tag oficial da fase 5 só sai na última rodada.
 
 ## O que esperar
 
@@ -178,7 +178,7 @@ Eu usei a terceira porque quis ver o que a revisão por tarefa pega. Se o seu pr
 - **O CLI do shadcn/ui travou esperando resposta.** Ele é interativo; sem terminal, trava. Passe os parâmetros na linha de comando (eu usei `-p nova`).
 - **O Prisma 7 deu erros estranhos** (adapter obrigatório, `prisma.config.ts`, client gerado fora do `node_modules`). Veja o `research.md`; foi decisão do plano.
 - **Subagente mexeu fora do projeto** (veja o aviso abaixo). Aconteceu comigo.
-- **Você quer outro nome de branch ou de worktree.** Sem problema; só mantenha os dois fáceis de achar no seu diário.
+- **Você quer outro nome de branch ou de worktree.** Sem problema; só mantenha os dois fáceis de achar.
 
 Para retomar do meu ponto: `git checkout fase-5a-rodada-1`.
 
@@ -187,7 +187,7 @@ Para retomar do meu ponto: `git checkout fase-5a-rodada-1`.
 - **Dar liberdade ao agente exige perguntar o que ele fez depois.** Os Rulings são a "caixa-preta" do processo.
 - **A revisão final achou o que as revisões por tarefa não acharam.** O furo de concorrência no bloqueio só aparece olhando o conjunto. Reveja a branch inteira, mesmo com tudo verde.
 - **Subagente com acesso ao terminal pode fazer estrago fora do projeto.** Na T023, um subagente rodou `taskkill /IM node.exe` para parar o servidor de desenvolvimento, e isso matou **todos** os processos Node da minha máquina, não só os do projeto. Nada se perdeu de forma permanente, mas desde então eu proíbo isso nas instruções dos subagentes ("pare só o processo que você iniciou"). Na T021, outro usou `git stash`; a pilha de stash é compartilhada entre o checkout principal e os worktrees, então passei a proibir também. **Diga o que o agente não pode fazer, não só o que ele deve fazer.**
-- **O plano envelhece.** O CLI do shadcn/ui não era o do rascunho. Registre divergências assim que aparecem: aqui virou o ADR 0011.
+- **O plano envelhece.** O CLI do shadcn/ui não era o do guia que eu seguia. Registre divergências assim que aparecem: aqui virou um ADR.
 
 ## Gancho
 

@@ -10,8 +10,10 @@ Segundo capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica
 **Tag de partida:** nenhuma. Você começa de uma pasta vazia.
 **Tag de chegada:** `fase-0-setup` (no [laboratório](https://github.com/leandropiga/arkhos.labs.sdd.contract)).
 
-:::note[A ordem no laboratório foi outra]
-No meu laboratório, a ideação (capítulo 03) veio **antes** de eu instalar o Spec Kit e o Superpowers. Por isso a tag `fase-0-setup` já inclui os resultados do capítulo 03. O commit `9672266` é o ponto "só setup", antes da instalação das ferramentas. Neste tutorial a ordem didática é setup, ideação, constituição.
+:::note[Aqui a ordem é diferente da do laboratório]
+No laboratório, eu fiz a ideação (capítulo 03) **antes** de instalar o Spec Kit e o Superpowers. Só que, no tutorial, faz mais sentido você preparar as ferramentas primeiro e só depois pensar na ideia. Por isso a ordem aqui é: setup (este capítulo), ideação (03), constituição (04).
+
+Isso tem um efeito na tag. A `fase-0-setup` já traz o resultado da ideação junto, porque no laboratório as duas coisas entraram juntas. Se você quer o ponto com **só** o setup, sem a ideação, use o commit `9672266`.
 :::
 
 ## O que vamos fazer e por quê
@@ -19,7 +21,7 @@ No meu laboratório, a ideação (capítulo 03) veio **antes** de eu instalar o 
 Vamos instalar duas ferramentas e conectar o Claude Code ao GitHub, para ele mesmo criar repositório, fazer commit e push.
 
 :::note[Isto é parte dos meus estudos]
-Eu usei **dois** frameworks de SDD juntos porque quis testar a divisão de trabalho entre eles. Não estou dizendo que é o jeito certo, nem que um framework só não resolveria. Existem outras opções (OpenSpec, BMAD, o próprio Kiro) e eu não comparei com elas. Conto o que eu escolhi e por quê. Você decide o seu.
+Eu usei **dois** frameworks de SDD juntos porque quis testar a divisão de trabalho entre eles. Não estou dizendo que é o jeito certo, nem que um framework só não resolveria. Existem outras opções (OpenSpec, BMAD, o próprio Kiro).
 :::
 
 A divisão que eu quis testar:
@@ -34,7 +36,7 @@ Por que os dois? Porque cada um sozinho deixa uma lacuna, pelo menos no meu ente
 - Só o Spec Kit gera ótimos documentos, mas **não obriga** o agente a seguir uma disciplina quando ele escreve o código.
 - Só o Superpowers impõe a disciplina de implementação, mas o plano que ele gera é **temporário**. Não sobra uma spec viva no repositório.
 
-Juntos: o Spec Kit produz os artefatos duráveis (fases 2 a 4 deste tutorial) e o Superpowers executa o `tasks.md` com disciplina (da fase 5 em diante). O custo é concreto: duas ferramentas para instalar e entender, e uma implementação mais lenta e mais cara em tokens, em troca de menos retrabalho. Se o balanço compensa para você, só dá para saber testando.
+Juntos: o Spec Kit produz os artefatos duráveis (fases 2 a 4 deste tutorial) e o Superpowers executa o `tasks.md` com disciplina (da fase 5 em diante). Como *tradeoff* custo é concreto: duas ferramentas para instalar e entender, e uma implementação mais lenta e mais cara em tokens, em troca de menos retrabalho. Se o balanço compensa para você, só dá para saber testando.
 
 Alguns termos que vão aparecer, para você não tropeçar:
 
@@ -61,12 +63,12 @@ No laboratório original o sistema era Windows 11 (PowerShell). Os comandos abai
 ### 1. Crie a pasta e inicie o Git
 
 ```bash
-mkdir arkhos.labs.sdd.contract
-cd arkhos.labs.sdd.contract
+mkdir tutorial.sdd.contract
+cd tutorial.sdd.contract
 git init -b main
 ```
 
-O nome da pasta é o que eu usei. Use o que quiser.
+Usei `tutorial.sdd.contract` para não confundir com o repositório do laboratório (`arkhos.labs.sdd.contract`, o meu). O nome é livre.
 
 ### 2. Conecte o GitHub (`gh`)
 
@@ -111,40 +113,51 @@ git config --global user.name "Seu Nome"
 git config --global user.email "seu-email@exemplo.com"
 ```
 
-### 3. Deixe o Claude registrar tudo
+### 3. Deixe o Claude registrar as decisões
 
-Crie um `CLAUDE.md` na raiz. O Claude Code lê esse arquivo a cada sessão. A regra mais importante do meu laboratório está nele: **toda etapa deixa rastro em `docs/`**. Uma versão enxuta para você começar:
+Aqui você **não** cria o `CLAUDE.md` na mão. Quem cria é o Claude, a partir de um prompt. O `CLAUDE.md` é um arquivo que o Claude Code lê no começo de cada sessão, e é nele que entram as regras do projeto. A mais importante para este tutorial: **toda decisão relevante vira um ADR**. ADR (*Architecture Decision Record*) é um arquivo curto que registra o contexto, a decisão e as consequências de uma escolha. Colocar essa regra no `CLAUDE.md` faz o hábito ser automático, porque você não precisa lembrar de pedir.
+
+Abra o Claude Code dentro da pasta que você acabou de criar:
+
+```bash
+claude
+```
+
+E mande este prompt:
+
+```text
+Este repositório é um projeto de estudo de SDD (Spec-Driven Development). Vamos construir,
+passo a passo, uma aplicação de gestão de contratos de clientes.
+
+Crie um CLAUDE.md na raiz com estas regras:
+- Idioma do projeto e dos documentos: português (pt-BR).
+- Toda decisão relevante (escolha de tecnologia, trade-off, desvio do que foi planejado) vira
+  um ADR curto em docs/decisoes/, listado em docs/decisoes/README.md.
+- Um commit por etapa concluída, com mensagem em português, e push depois de cada commit.
+- Ao fim de cada fase, criar a tag fase-N-<nome> e enviá-la ao remoto.
+
+Crie também a pasta docs/decisoes/ com um README (índice) e um modelo de ADR (_template.md).
+```
+
+O Claude responde com o `CLAUDE.md` e a pasta `docs/decisoes/`. O texto exato vai variar de uma execução para outra, e tudo bem. O que importa é o `CLAUDE.md` ter, no mínimo, as ideias abaixo:
 
 ```markdown
 # CLAUDE.md
 
 ## Propósito
-Laboratório de estudo de SDD (Spec-Driven Development). O produto é o registro do processo.
+Projeto de estudo de SDD (Spec-Driven Development): aplicação de gestão de contratos de clientes.
 Idioma: português (pt-BR).
 
-## Regra principal: registrar tudo
-1. Diário (`docs/diario/`): uma entrada numerada por etapa, com objetivo, comandos, prompts,
-   arquivos gerados, problemas e aprendizados.
-2. Decisões (`docs/decisoes/`): toda escolha relevante vira um ADR curto.
-3. Prompts (`docs/prompts/`): prompts significativos, transcritos na íntegra.
+## Decisões
+Toda decisão relevante vira um ADR curto em `docs/decisoes/` (`NNNN-titulo.md`),
+listado em `docs/decisoes/README.md`.
 
 ## Git
 - Um commit por etapa concluída, em pt-BR. Push após cada commit de etapa.
 - Ao fim de cada fase, criar a tag `fase-N-<nome>` e enviá-la ao remoto.
 ```
 
-Essa é uma versão resumida. O `CLAUDE.md` completo, com todas as regras que o laboratório foi ganhando, está no [laboratório](https://github.com/leandropiga/arkhos.labs.sdd.contract/blob/fase-0-setup/CLAUDE.md), na tag `fase-0-setup`.
-
-O prompt que eu mandei para começar o laboratório foi este:
-
-```text
-o objetivo desse repositorio é ser uma aplicação de laboratorio (labs) para fins de estudo
-usando framework SDD. Preciso que todos os passos desde a ideação até a implementação e
-deploy sejam registrados para posteriormente eu passa criar um tutorial sobre o assunto e
-disponibilizar na internet.
-```
-
-Ele gerou a estrutura `docs/` (diário, decisões, prompts) e o `CLAUDE.md`. Colocar a regra de registro no `CLAUDE.md` faz o hábito ser automático: você não precisa lembrar de pedir.
+Abra o arquivo que o Claude gerou e confira se essas regras estão lá. Se faltar alguma, peça para ele acrescentar, em linguagem natural. Se o resultado ficou muito diferente, tudo bem copiar o bloco acima para dentro do seu `CLAUDE.md`: o importante é a regra das decisões existir.
 
 ### 4. (Opcional) Pré-autorize comandos
 
@@ -264,18 +277,18 @@ Peça ao Claude em linguagem natural. Por baixo dos panos, ele roda algo assim:
 
 ```bash
 git add .
-git commit -m "diario(00-01): setup do laboratorio e conexao com GitHub"
-gh repo create arkhos.labs.sdd.contract --private --source . --remote origin --push
+git commit -m "chore: setup do projeto e conexao com GitHub"
+gh repo create tutorial.sdd.contract --private --source . --remote origin --push
 ```
 
-Eu usei `--private` durante o desenvolvimento. Se você só quer acompanhar o tutorial, tanto faz. O `--source .` cria o repositório, configura o `origin` e já faz o push, tudo de uma vez.
+Eu usei `--private` durante o desenvolvimento. Se você só quer acompanhar o tutorial, tanto faz; escolha o que preferir. O `--source .` cria o repositório, configura o `origin` e já faz o push, tudo de uma vez.
 
 ## O que esperar
 
 - `specify --version` mostra `1.2.0` (ou mais nova).
 - `claude plugin list` mostra o Superpowers 7.0.0 ou mais novo.
 - Depois de reiniciar, `/speckit` lista pelo menos `speckit-constitution`, `speckit-specify`, `speckit-clarify`, `speckit-plan`, `speckit-tasks`, `speckit-analyze` e `speckit-implement`.
-- A pasta tem `CLAUDE.md`, `.specify/`, `.claude/` e `docs/`, e o repositório existe no GitHub.
+- A pasta tem `CLAUDE.md`, `.specify/`, `.claude/` e `docs/decisoes/`, e o repositório existe no GitHub.
 
 ## Se o seu deu diferente
 
@@ -290,8 +303,8 @@ Eu usei `--private` durante o desenvolvimento. Se você só quer acompanhar o tu
 ## O que isso mostrou
 
 - Conferir a versão **depois** de instalar (`--version`, `plugin list`) me salvou do Spec Kit antigo e me levou ao Superpowers 7.
-- Ler as notas de versão foi o que me fez trocar de marketplace. Decisão pequena, mas vale o registro: no meu laboratório, toda divergência do plano original virou um ADR (registro curto de decisão), e o capítulo ganha o "porquê" de graça.
-- Colocar a regra de registro no `CLAUDE.md` transforma o hábito em padrão. O diário que alimenta este tutorial existe por causa dela.
+- Ler as notas de versão foi o que me fez trocar de marketplace. Decisão pequena, mas vale o registro: toda divergência do plano original merece um ADR, porque daqui a um mês você não vai lembrar por que escolheu um caminho e não o outro.
+- Colocar a regra dos ADRs no `CLAUDE.md` transforma o hábito em padrão: o Claude passa a registrar as decisões sem você pedir.
 
 ## Gancho
 

@@ -5,7 +5,7 @@ description: As rodadas 2 a 6 e o que só a revisão final da branch achou (roda
 
 ## Onde estamos
 
-Nono capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/08-implementar-com-subagentes/) rodei a primeira rodada, o MVP de login, e a revisão final ainda achou quatro problemas sérios. Se você chegou direto aqui: precisa do projeto no ponto em que o login funciona e o ADR 0010 (a decisão de implementar por rodadas) está no repositório.
+Nono capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/08-implementar-com-subagentes/) rodei a primeira rodada, o MVP de login, e a revisão final ainda achou quatro problemas sérios. Se você chegou direto aqui: precisa do projeto no ponto em que o login funciona e um ADR com a decisão de implementar por rodadas está no repositório.
 
 **Tag de partida:** `fase-5a-rodada-1`.
 **Tag de chegada:** `fase-5-implementacao` (as rodadas 2 a 6 mergeadas; a validação manual e as dívidas vêm nos capítulos seguintes).
@@ -33,13 +33,13 @@ O foco deste capítulo não é o código. É **entender o que cada camada de rev
 - **Revisão por tarefa**: um revisor confere a tarefa isolada (aderência à spec e qualidade).
 - **Revisão final da branch**: um revisor, com o modelo mais capaz, lê a rodada inteira.
 
-E um registro: os **Rulings**, as decisões que o agente tomou sozinho, que você copia do ledger para o diário no fim de cada rodada (o ledger fica fora do Git).
+E um registro: os **Rulings**, as decisões que o agente tomou sozinho, que você salva do ledger num arquivo do repositório (por exemplo `docs/rulings.md`) no fim de cada rodada, porque o ledger fica fora do Git.
 
 ## Passo a passo
 
 ### 1. Peça a rodada seguinte, curto
 
-Depois da rodada 1, o prompt pode ser curto **se** as regras estiverem escritas no repositório (`CLAUDE.md` e o ADR 0010). Foi assim que pedi a rodada 2:
+Depois da rodada 1, o prompt pode ser curto **se** as regras estiverem escritas no repositório (o `CLAUDE.md` e um ADR com as regras e o quadro de rodadas). Foi assim que pedi a rodada 2:
 
 ```text
 inicie a rodada 2
@@ -52,21 +52,21 @@ pode seguir, me avise só ao fim da T046
 Depois da rodada, ainda mandei:
 
 ```text
-corrija o NUL e escreva o diário
+corrija o NUL e salve os Rulings em docs/rulings.md
 ```
 
 O agente deduziu sozinho o que faltava dizer:
 
 | Faltava dizer | De onde veio |
 |---|---|
-| Escopo da rodada (US2 = T036 a T046) | o diário anterior ("Próximo passo") e o quadro de rodadas do ADR 0010 |
+| Escopo da rodada (US2 = T036 a T046) | o `tasks.md` (as tarefas ainda sem `[X]`) e o quadro de rodadas do ADR |
 | Worktree e nome da branch | convenção da rodada 1 |
-| Parar antes do merge e do push | ADR 0010 |
-| `.env` locais, Docker | diário anterior e `backend/.env.example` |
+| Parar antes do merge e do push | o ADR de rodadas |
+| `.env` locais, Docker | `backend/.env.example` e a rodada 1 |
 
 **Um `CLAUDE.md` e um ADR bons valem mais que um prompt comprido.**
 
-Atenção: esse prompt curto só funciona porque o meu repositório tem essas regras escritas. O `CLAUDE.md` enxuto do capítulo 02 não tem o quadro de rodadas. Para seguir igual, copie do laboratório (tag `fase-5a-rodada-1`) o `CLAUDE.md` completo e o ADR 0010, ou escreva o escopo por extenso: "Execute as tarefas T036 a T046 do tasks.md com o subagent-driven-development, num worktree em .worktrees/, e pare ao concluir a T046". Essa última frase é uma adaptação minha, não um prompt do laboratório.
+Atenção: esse prompt curto só funciona porque o meu repositório tem essas regras escritas. O `CLAUDE.md` do capítulo 02 não tem o quadro de rodadas. Você tem dois caminhos. O primeiro é pedir ao Claude para registrar as regras do prompt da rodada 1 e o quadro de rodadas num ADR "Implementação por rodadas", e citá-lo no `CLAUDE.md`. O segundo é escrever o escopo por extenso: "Execute as tarefas T036 a T046 do tasks.md com o subagent-driven-development, num worktree em .worktrees/, e pare ao concluir a T046".
 
 ### 2. Prepare o worktree de cada rodada
 
@@ -108,7 +108,7 @@ Na mesma rodada, duas corridas (a análise de um PDF antigo sendo gravada como s
 
 ### 4. Leia os Rulings
 
-No fim de cada rodada, peça a lista e copie-a para o diário. Estes são exemplos reais de decisões que o agente tomou sem me chamar, com o custo se estiverem erradas:
+No fim de cada rodada, peça a lista e salve-a em `docs/rulings.md`. Estes são exemplos reais de decisões que o agente tomou sem me chamar, com o custo se estiverem erradas:
 
 | Rodada | Decisão | Custo se errado |
 |---|---|---|
@@ -133,7 +133,7 @@ git push origin fase-5-implementacao
 
 - Cinco rodadas mergeadas, cada uma com um conjunto de commits por tarefa e `[X]` no `tasks.md`.
 - A suíte crescendo: depois da rodada 6, o backend estava em 302 testes e o frontend em 75, todos verdes.
-- Uma lista de Rulings por rodada, copiada para o diário.
+- Uma lista de Rulings por rodada, salva em `docs/rulings.md`.
 - Uma lista de **dívidas anotadas** por rodada (itens menores adiados de propósito).
 
 Para conferir: rode a suíte dos dois pacotes (`npx vitest run`) e `npx tsc --noEmit` no backend. Depois confira que o bundle do frontend não leva a chave da IA:

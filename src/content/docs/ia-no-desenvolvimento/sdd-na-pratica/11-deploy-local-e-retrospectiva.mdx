@@ -18,8 +18,8 @@ git checkout 4ae7ba1
 
 ## O que vamos fazer e por quê
 
-1. **Deploy.** Aqui, "deploy" significa **rodar a aplicação completa localmente**, como decidi lá no começo (ADR 0003). Antes de executar, perguntei de novo se eu queria mudar de ideia e publicar em nuvem. Mantive local. Vale reabrir uma decisão antiga quando chega a hora de executá-la: o ADR foi escrito antes de existir código, e perguntar de novo custa um minuto.
-2. **Retrospectiva.** Olhar para trás, para as 21 entradas do diário (de 00 a 20), e responder: o que funcionou, o que não funcionou e o que eu faria diferente. Tudo sai do diário, dos ADRs e do Git. Onde eu estou opinando, eu digo.
+1. **Deploy.** Aqui, "deploy" significa **rodar a aplicação completa localmente**, como decidi lá no capítulo 03. Antes de executar, perguntei de novo se eu queria mudar de ideia e publicar em nuvem. Mantive local. Vale reabrir uma decisão antiga quando chega a hora de executá-la: o ADR foi escrito antes de existir código, e perguntar de novo custa um minuto.
+2. **Retrospectiva.** Olhar para trás, para as etapas e decisões do projeto, e responder: o que funcionou, o que não funcionou e o que eu faria diferente. Tudo sai dos ADRs e do Git. Onde eu estou opinando, eu digo.
 
 ## Passo a passo
 
@@ -75,9 +75,7 @@ Um deploy local também é uma decisão. Prefiro terminar com o app rodando e um
 
 | O quê | Quanto |
 |---|---|
-| Entradas no diário | 21 (00 a 20, esta é a última) |
 | Decisões registradas (ADRs) | 11 |
-| Prompts transcritos | 9 arquivos |
 | Tarefas no `tasks.md` | 86, todas concluídas |
 | Rodadas de implementação | 7, mais a validação manual e o deploy local |
 | Commits no Git | cerca de 120 |
@@ -101,7 +99,7 @@ A proporção chama a atenção: quase uma linha de teste para cada linha de có
 1. **A extensão `bug` do Spec Kit ficou sem uso.** Eu tinha dito que bugs reais passariam pelo fluxo `/speckit-bug-assess`, `-fix` e `-test`. Na prática, **nenhum** dos bugs da implementação passou por ele: foram achados e resolvidos dentro do ciclo de revisão do Superpowers (revisor, correção, re-revisão). Há duas leituras honestas: ou o ciclo do Superpowers já cobre o mesmo terreno e o `bug` é redundante dentro de uma rodada, ou o `bug` serviria para defeitos achados **depois** da rodada (como o 503 do Gemini) e eu simplesmente não tive nenhum desses. Minha opinião é a segunda, mas **não testei**. Não prometo esse fluxo como se tivesse sido exercitado.
 2. **Os scripts do Superpowers esperam um formato de plano que o Spec Kit não gera.** O `task-brief` procura títulos "Task N" e o meu `tasks.md` usa `T001`. Em duas rodadas escrevi os pedidos à mão. Funciona, mas é um atrito de juntar as duas ferramentas.
 3. **Subagentes precisam de cerca.** Um com acesso ao terminal fez estrago fora do projeto; outro usou `git stash` num worktree compartilhado. A lição foi a mesma duas vezes: diga o que o agente **não** pode fazer.
-4. **O processo é pesado para o tamanho do problema.** Para uma aplicação de um usuário só, a cerimônia é grande: 11 ADRs, 21 entradas, 7 rodadas, revisões em camadas. Faz sentido **porque o objetivo era ensinar o processo**. Num projeto real e pequeno, eu cortaria: menos rodadas, uma revisão final só, ADRs só para divergências de verdade. Isso é opinião minha.
+4. **O processo é pesado para o tamanho do problema.** Para uma aplicação de um usuário só, a cerimônia é grande: 11 ADRs, 7 rodadas, revisões em camadas. Faz sentido **porque o objetivo era estudar o processo**. Num projeto real e pequeno, eu cortaria: menos rodadas, uma revisão final só, ADRs só para divergências de verdade. Isso é opinião minha.
 5. **Tudo foi feito por quem acompanhou o tempo todo.** Os pontos de "pare e pergunte" funcionaram, mas o laboratório não mostra o que acontece quando **ninguém está olhando**. Rulings errados custam retrabalho, e eu só descobri os meus porque alguém leu a lista no fim.
 6. **Dívidas acumuladas.** Anotei dívidas rodada a rodada e só fechei cinco. Ficaram em aberto, de propósito: acessibilidade do menu de perfil e do gráfico, "tentar de novo" na Home, alguns testes menores. **Dívida anotada não é dívida paga.**
 
@@ -111,7 +109,7 @@ A proporção chama a atenção: quase uma linha de teste para cada linha de có
 2. Ter um `ErrorBoundary` e o tratamento de erro de rede **no plano**, e não como dívida da rodada 7. Quem divide o bundle precisa saber que um pedaço pode não carregar.
 3. Rodar o roteiro manual **por pedaços, ao fim de cada rodada**, não tudo no final.
 4. Decidir cedo a regra dos arquivos de configuração local (`.env`, `.env.test`) e ter um script de "preparar ambiente". Eu os recriei à mão em quase toda rodada.
-5. Definir antes que o tutorial só promete o que foi exercitado. Vale para a extensão `bug`.
+5. Definir antes que só vou prometer o que foi exercitado. Vale para a extensão `bug`.
 
 **O que levar daqui, em sete linhas:**
 
