@@ -58,7 +58,7 @@ Versões que usei, conferidas em 19/10/2026:
 | Claude Code | 2.1.302 |
 | Docker / Compose | 29.4.1 / v5.1.3 |
 
-No laboratório original o sistema era Windows 11 (PowerShell). Os comandos abaixo funcionam em macOS e Linux também; onde muda, eu aviso.
+Os comandos abaixo funcionam em Windows, macOS e Linux; onde muda, eu aviso.
 
 ### 1. Crie a pasta e inicie o Git
 
@@ -177,7 +177,7 @@ Por padrão o Claude Code pede permissão antes de rodar comandos. Para não apr
 }
 ```
 
-Repare que `gh repo create` **não** está na lista liberada. É de propósito: criar repositório publica coisas na internet, então é bom o Claude perguntar antes. (No Windows, o arquivo completo do laboratório repete cada regra também como `PowerShell(...)`.)
+Repare que `gh repo create` **não** está na lista liberada. É de propósito: criar repositório publica coisas na internet, então é bom o Claude perguntar antes.
 
 ### 5. Instale o Spec Kit
 
@@ -188,7 +188,7 @@ uv tool install specify-cli
 specify --version
 ```
 
-Aqui eu tropecei: a saída mostrou `specify 0.15.2.dev0`, uma versão velha que já estava na minha máquina. O `uv tool install` **não atualiza** uma ferramenta que já existe. Se for o seu caso:
+A saída deve mostrar `specify 1.2.0` (ou mais nova). O `uv tool install` **não atualiza** uma ferramenta que já está instalada, então, se aparecer uma versão mais velha, atualize:
 
 ```bash
 uv tool upgrade specify-cli
@@ -235,37 +235,21 @@ Ela cria três comandos, `/speckit-bug-assess`, `/speckit-bug-fix` e `/speckit-b
 
 ### 6. Instale o Superpowers
 
-O caminho mais simples é o marketplace oficial da Anthropic:
+Rode os três comandos, na ordem, dentro da pasta do projeto:
 
 ```bash
-claude plugin install superpowers@claude-plugins-official --scope project
-```
-
-Eu fiz isso primeiro, e veio a versão **6.4.1**. A mais nova no GitHub era a **7.0.0**. Lendo as notas de versão, vi correções para Windows e para o modelo que eu estava usando (Opus 5.5), exatamente o meu ambiente. Então troquei para o marketplace do autor do plugin:
-
-```bash
-claude plugin uninstall superpowers@claude-plugins-official --scope project
 claude plugin marketplace add obra/superpowers-marketplace
 claude plugin install superpowers@superpowers-marketplace --scope project
 claude plugin list
 ```
 
-Na lista deve aparecer `superpowers@superpowers-marketplace` na versão 7.0.0 (ou mais nova, quando você ler isto). Dá para fazer o mesmo dentro do Claude Code, com `/plugin marketplace add ...` e `/plugin install ...`.
+1. O primeiro registra o marketplace do autor do plugin.
+2. O segundo instala o Superpowers a partir dele.
+3. O terceiro lista o que está instalado. Deve aparecer `superpowers@superpowers-marketplace` na versão **7.0.0** (ou mais nova).
 
-**Por que `--scope project`?** O plugin fica registrado em `.claude/settings.json`, que vai para o Git. Quem clonar o repositório recebe a oferta de instalar o mesmo plugin. Para isso o marketplace também é declarado no arquivo:
+Use esse marketplace, e não o oficial da Anthropic: quando conferi, o oficial entregava a 6.4.1, sem as correções da 7.0.0.
 
-```json
-{
-  "enabledPlugins": {
-    "superpowers@superpowers-marketplace": true
-  },
-  "extraKnownMarketplaces": {
-    "superpowers-marketplace": {
-      "source": { "source": "github", "repo": "obra/superpowers-marketplace" }
-    }
-  }
-}
-```
+O `--scope project` grava o plugin em `.claude/settings.json`, que vai para o Git. Quem clonar o repositório recebe a oferta de instalar o mesmo plugin.
 
 ### 7. Reinicie o Claude Code
 
@@ -273,7 +257,14 @@ Skills e plugins só são carregados quando a sessão começa. Saia com `/exit` 
 
 ### 8. Crie o repositório no GitHub
 
-Peça ao Claude em linguagem natural. Por baixo dos panos, ele roda algo assim:
+Peça ao Claude em linguagem natural. Por exemplo:
+
+```text
+Faça o commit de tudo o que criamos até agora e crie um repositório privado no GitHub chamado
+tutorial.sdd.contract, já configurando o origin e fazendo o push.
+```
+
+Como o `gh repo create` não está na lista liberada (passo 4), o Claude vai pedir a sua confirmação antes de rodar. Por baixo dos panos, ele executa algo assim:
 
 ```bash
 git add .
@@ -292,18 +283,18 @@ Eu usei `--private` durante o desenvolvimento. Se você só quer acompanhar o tu
 
 ## Se o seu deu diferente
 
-- **`specify --version` mostra uma versão antiga.** É o meu tropeço: `uv tool upgrade specify-cli`.
+- **`specify --version` mostra uma versão antiga.** Atualize com `uv tool upgrade specify-cli`.
 - **Os comandos `/speckit` não aparecem.** Reinicie o Claude Code. Skills só carregam na abertura da sessão.
 - **O Superpowers entrega uma versão mais velha ou mais nova que a minha.** Pode acontecer: o plugin evolui. O nome dos comandos pode mudar um pouco. O que importa para o tutorial são os papéis (brainstorming, planos, TDD, subagentes), que se mantêm. Anote a sua versão.
-- **O `specify init` avisa para ignorar `.claude/` no Git.** Alguns agentes guardam credenciais ali. No meu caso eu **versionei** `.claude/settings.json` e `.claude/skills/` de propósito, e deixei o que é pessoal (`.claude/settings.local.json`) no `.gitignore`.
+- **O `specify init` avisa para ignorar `.claude/` no Git.** Alguns agentes guardam credenciais ali. Neste tutorial a gente **versiona** `.claude/settings.json` e `.claude/skills/` de propósito, e deixa o que é pessoal (`.claude/settings.local.json`) no `.gitignore`.
 - **O `uv` não está instalado ou o Python é diferente.** O `uv` cuida do Python para você. Instale pelo site oficial.
 
 **Para retomar do meu ponto:** `git clone https://github.com/leandropiga/arkhos.labs.sdd.contract.git` e `git checkout fase-0-setup`.
 
 ## O que isso mostrou
 
-- Conferir a versão **depois** de instalar (`--version`, `plugin list`) me salvou do Spec Kit antigo e me levou ao Superpowers 7.
-- Ler as notas de versão foi o que me fez trocar de marketplace. Decisão pequena, mas vale o registro: toda divergência do plano original merece um ADR, porque daqui a um mês você não vai lembrar por que escolheu um caminho e não o outro.
+- Conferir a versão **depois** de instalar (`--version`, `plugin list`) evita seguir o tutorial com uma ferramenta desatualizada.
+- Ler as notas de versão antes de aceitar o que o marketplace entrega é uma decisão pequena, mas vale o registro: toda divergência do plano original merece um ADR, porque daqui a um mês você não vai lembrar por que escolheu um caminho e não o outro.
 - Colocar a regra dos ADRs no `CLAUDE.md` transforma o hábito em padrão: o Claude passa a registrar as decisões sem você pedir.
 
 ## Gancho

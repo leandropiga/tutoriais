@@ -92,7 +92,7 @@ A proporção chama a atenção: quase uma linha de teste para cada linha de có
 3. **Tarefas por história, não por camada.** Cada rodada terminava com algo que dava para abrir e usar.
 4. **Revisão em duas camadas.** A de tarefa pega defeito local; a final da branch pega o que só se vê no conjunto (o furo de concorrência no bloqueio de login, as mensagens duplicadas, o `EXDEV` combinado com o `PUT`).
 5. **O ledger e os Rulings.** Deixar o agente decidir só é seguro se as decisões ficarem escritas.
-6. **Registrar o erro, não só o acerto.** As lições de que mais aprendi são os tropeços: o `.env` que não existia, o `npx` que baixou outra versão do Prisma, o 503 que parecia bug meu, o filtro de segurança que cortou dois agentes.
+6. **Registrar o erro, não só o acerto.** As lições que mais valem estão nos tropeços do caminho: o 503 que só o log explicou, o `.env` que só é lido na partida, o fallback do `EXDEV` que estragava o PDF.
 
 **O que não funcionou (ou funcionou pela metade):**
 

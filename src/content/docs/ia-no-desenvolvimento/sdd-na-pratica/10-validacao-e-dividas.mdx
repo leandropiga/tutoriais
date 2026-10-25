@@ -1,6 +1,6 @@
 ---
 title: 10. Validação e dívidas
-description: O roteiro manual de 14 passos com a IA de verdade, o 503 que parecia bug meu e a rodada 7, que fechou as cinco dívidas que mexem com produção e segurança.
+description: O roteiro manual de 14 passos com a IA de verdade, como ler o log quando a IA devolve erro e a rodada 7, que fechou as cinco dívidas que mexem com produção e segurança.
 ---
 
 ## Onde estamos
@@ -47,9 +47,9 @@ npm ci
 npm run dev              # app em http://localhost:5173
 ```
 
-Os dois servidores de desenvolvimento não terminam. Se você juntar migração, seed e servidores num comando só, ele nunca volta (aconteceu comigo e estourou o tempo limite). Rode cada passo separado.
+Os dois servidores de desenvolvimento não terminam. Se você juntar migração, seed e servidores num comando só, ele nunca volta, ou o comando nunca termina e estoura o tempo limite. Rode cada passo separado.
 
-Um tropeço meu para você evitar: na pasta principal não havia `node_modules`, e o `npx prisma` baixou outra versão do Prisma (a 8, em testes), na qual o comando `migrate` nem existia. Rode `npm ci` nas duas pastas **antes** de qualquer `npx`.
+Atenção a um detalhe: sem `node_modules` na pasta, o `npx prisma` baixa a versão mais recente do Prisma (a 8, em testes), na qual o comando `migrate` nem existe. Rode `npm ci` nas duas pastas **antes** de qualquer `npx`.
 
 ### 2. Gere os arquivos de teste do passo 6
 
@@ -104,18 +104,18 @@ Esta é a tabela do `quickstart.md`, seção 5. Rode na ordem:
 
 O passo 14 vale um comentário: é a regra da constituição ("apagar inclusive em caso de erro") conferida na prática, com a pasta de uploads **vazia** depois de um upload bem-sucedido, um recusado e uma análise.
 
-No meu caso, os 14 passos passaram. O passo 3 eu não esperei os 15 minutos do desbloqueio, só conferi o aviso.
+Os 14 passos devem passar. No passo 3 você não precisa esperar os 15 minutos do desbloqueio: basta conferir o aviso.
 
-### 4. O passo 9 falhou de primeira, e a culpa não era minha
+### 4. Se o passo 9 falhar, leia o log antes de mexer no código
 
-Na tela apareceu "serviço de análise temporariamente indisponível". Primeiro reflexo: achar que meu código tinha um bug. Antes de mexer em qualquer coisa, olhei o log do backend, que mostra o que o Google devolveu:
+Pode aparecer na tela "serviço de análise temporariamente indisponível". O primeiro reflexo é achar que o seu código tem um bug. Antes de mexer em qualquer coisa, olhe o log do backend, que mostra o que o Google devolveu:
 
 ```text
 503 UNAVAILABLE: This model is currently experiencing high demand.
 Spikes in demand are usually temporary. Please try again later.
 ```
 
-A chave estava certa (a chamada chegou ao Gemini), mas o **modelo estava sobrecarregado**. O app fez o certo: mapeou o erro para `503 IA_INDISPONIVEL` e mostrou a mensagem combinada, sem vazar nada técnico (Princípio III). Sem querer, isso foi um ensaio do passo 11. Mais tarde o Gemini voltou ao normal e a análise funcionou, sem mexer em código.
+Se a chamada chegou ao Gemini, a chave está certa, e o **modelo estava sobrecarregado**. O app fez o certo: mapeou o erro para `503 IA_INDISPONIVEL` e mostrou a mensagem combinada, sem vazar nada técnico (Princípio III). Esse erro é, de brinde, um ensaio do passo 11. Espere um pouco e repita: a análise volta a funcionar sem mexer em código.
 
 **Leia o log antes de "consertar".** A mensagem da tela é genérica de propósito; o motivo de verdade está no log do servidor.
 
@@ -166,11 +166,7 @@ A revisão aprovou as cinco tarefas, sem nada Critical, mas achou um **Important
 
 A correção: copiar para `<destino>.<uuid>.part` na mesma pasta e só então fazer `rename`, que é atômico.
 
-### 8. Quando o filtro de segurança do modelo corta o trabalho
-
-Na T081, o filtro de segurança do modelo cortou **dois** implementadores no meio do trabalho (primeiro o Opus, depois o Sonnet), com "safeguards flagged this message". Era alarme falso: o texto falava só de concorrência e arquivos. O que fazer: **confira o repositório antes de repetir a tarefa.** O primeiro não tinha deixado nada; o segundo já tinha feito o commit e o relatório antes de ser cortado. Rodei a suíte eu mesmo (308 testes verdes) e segui para a revisão.
-
-### 9. Marque os pontos
+### 8. Marque os pontos
 
 No laboratório, a tag `fase-6-validacao` fecha a validação manual, antes da rodada 7:
 
@@ -211,4 +207,4 @@ Para retomar do meu ponto: `git checkout fase-6-validacao` (depois da validaçã
 
 ## Gancho
 
-Os 14 passos passaram, as cinco dívidas fecharam, e a aplicação roda inteira na minha máquina. Falta uma decisão que o tutorial inteiro vinha adiando: **onde isso roda?** Eu vou decidir isso no [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/11-deploy-local-e-retrospectiva/), e depois olhar para trás e dizer, com honestidade, o que funcionou, o que não funcionou e o que eu faria diferente.
+Os 14 passos passaram, as cinco dívidas fecharam, e a aplicação roda inteira localmente. Falta uma decisão que o tutorial inteiro vinha adiando: **onde isso roda?** Eu vou decidir isso no [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/11-deploy-local-e-retrospectiva/), e depois olhar para trás e dizer, com honestidade, o que funcionou, o que não funcionou e o que eu faria diferente.
