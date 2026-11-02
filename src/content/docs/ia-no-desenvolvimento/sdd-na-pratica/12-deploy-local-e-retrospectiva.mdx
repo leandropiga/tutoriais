@@ -155,7 +155,7 @@ A proporção chama a atenção: quase uma linha de teste para cada linha de có
 
 **O que não funcionou (ou funcionou pela metade):**
 
-1. **A extensão `bug` do Spec Kit ficou sem uso.** Eu tinha planejado que bugs reais passariam pelo fluxo `/speckit-bug-assess`, `-fix` e `-test` (veja o [capítulo 13](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/13-extras-extensoes-plugins-e-skills/)). Na prática, **nenhum** dos bugs da implementação passou por ele: foram achados e resolvidos dentro do ciclo de revisão do Superpowers (revisor, correção, re-revisão). Há duas leituras honestas: ou o ciclo do Superpowers já cobre o mesmo terreno e o `bug` é redundante dentro de uma rodada, ou o `bug` serviria para defeitos achados **depois** da rodada (como o 503 do Gemini) e eu simplesmente não tive nenhum desses. Minha opinião é a segunda, mas **não testei**. Não prometo esse fluxo como se tivesse sido exercitado.
+1. **A extensão `bug` do Spec Kit ficou sem uso.** Eu tinha planejado que bugs reais passariam pelo fluxo `/speckit-bug-assess`, `-fix` e `-test` (veja o [capítulo 13](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/13-extras/)). Na prática, **nenhum** dos bugs da implementação passou por ele: foram achados e resolvidos dentro do ciclo de revisão do Superpowers (revisor, correção, re-revisão). Há duas leituras honestas: ou o ciclo do Superpowers já cobre o mesmo terreno e o `bug` é redundante dentro de uma rodada, ou o `bug` serviria para defeitos achados **depois** da rodada (como o 503 do Gemini) e eu simplesmente não tive nenhum desses. Minha opinião é a segunda, mas **não testei**. Não prometo esse fluxo como se tivesse sido exercitado.
 2. **Os scripts do Superpowers esperam um formato de plano que o Spec Kit não gera.** O `task-brief` procura títulos "Task N" e o meu `tasks.md` usa `T001`. Em duas rodadas escrevi os pedidos à mão. Funciona, mas é um atrito de juntar as duas ferramentas.
 3. **Subagentes precisam de cerca.** Um com acesso ao terminal fez estrago fora do projeto; outro usou `git stash` num worktree compartilhado. A lição foi a mesma duas vezes: diga o que o agente **não** pode fazer.
 4. **O processo é pesado para o tamanho do problema.** Para uma aplicação de um usuário só, a cerimônia é grande: 11 ADRs, 7 rodadas, revisões em camadas. Faz sentido **porque o objetivo era estudar o processo**. Num projeto real e pequeno, eu cortaria: menos rodadas, uma revisão final só, ADRs só para divergências de verdade. Isso é opinião minha.
@@ -222,7 +222,7 @@ git push origin fase-8-retrospectiva
 
 ## O que vem a seguir
 
-Se quiser ir além do que o tutorial usou, o [capítulo 13](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/13-extras-extensoes-plugins-e-skills/) é opcional e mostra extensões do Spec Kit, plugins do Claude Code e skills que vale a pena conhecer.
+Se quiser ir além do que o tutorial usou, o [capítulo 13](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/13-extras/) é opcional e mostra extensões do Spec Kit, plugins do Claude Code e skills que vale a pena conhecer.
 
 Este foi o primeiro tutorial de uma série. Os próximos vão tratar de outras situações do dia a dia de quem programa com IA. Não tenho data, e prefiro não prometer uma: vou escrevê-los do jeito que escrevi este, só depois de exercitar cada passo. Se você quiser acompanhar, o [índice de assuntos](/tutoriais/ia-no-desenvolvimento/) lista o que existe e o que vier.
 

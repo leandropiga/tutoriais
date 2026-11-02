@@ -1,6 +1,6 @@
 ---
-title: "13. Extras: extensões, plugins e skills"
-description: O que dá para acrescentar ao Spec Kit e ao Claude Code além do que o tutorial usa, como instalar e o que conferir antes.
+title: 13. Extras
+description: O que dá para acrescentar ao Spec Kit e ao Claude Code além do que o tutorial usa, como instalar e o que conferir antes, e como quebrar o sistema em várias funcionalidades.
 ---
 
 ## Onde estamos
@@ -17,6 +17,8 @@ O Spec Kit e o Claude Code vêm com o essencial, e cada um tem um jeito de receb
 - Alguns resolvem atritos que você vai sentir no dia a dia, como criar uma branch por funcionalidade ou fazer commit ao fim de cada etapa.
 - Todos rodam código no seu projeto. Saber o que cada um faz, e o que conferir antes de instalar, é parte do trabalho.
 
+No fim, uma seção mostra outro jeito de usar o Spec Kit: quebrar o sistema em várias funcionalidades, em vez de uma só.
+
 Os três jeitos de estender o ambiente:
 
 | | Extensão do Spec Kit | Plugin do Claude Code | Skill |
@@ -24,7 +26,7 @@ Os três jeitos de estender o ambiente:
 | O que é | comandos `/speckit-*` a mais e *hooks* | pacote com skills, agentes, hooks e servidores MCP | um arquivo `SKILL.md` com instruções para o agente |
 | Como instala | `specify extension add <nome>` | `/plugin` ou `claude plugin install` | copiando uma pasta para `.claude/skills/` |
 | Onde fica | `.specify/extensions/` | configuração do Claude Code | `.claude/skills/` ou `~/.claude/skills/` |
-| Exemplo no tutorial | extensão `bug` (opcional, abaixo) | Superpowers | os próprios comandos `/speckit-*` |
+| Exemplo no tutorial | as extensões `git` e `bug`, neste capítulo | Superpowers | os próprios comandos `/speckit-*` |
 
 ## Extensões do Spec Kit
 
@@ -100,7 +102,7 @@ As opções mudam entre versões. Confira as da sua com `specify extension info 
 Para desligar sem desinstalar: `specify extension disable git`. A spec continua sendo criada, só sem branch.
 
 :::note[Quando vale instalar]
-Instale no **começo** de um projeto, e não no meio deste tutorial. Os capítulos seguintes contam com o trabalho na `main`, e a implementação do [capítulo 09](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/09-implementacao/) já usa *worktrees* próprios. No meu laboratório eu não usei essa extensão, então não tenho resultado para mostrar: o que está aqui vem da documentação.
+Instale no **começo** de um projeto, e não no meio deste tutorial. O tutorial conta com o trabalho na `main`, e a implementação do [capítulo 09](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/09-implementacao/) já usa *worktrees* próprios. No meu laboratório eu não usei essa extensão, então não tenho resultado para mostrar: o que está aqui vem da documentação.
 :::
 
 ### A extensão `bug`: um fluxo para defeitos
@@ -122,6 +124,18 @@ specify extension add bug
 
 No meu caso, instalei a extensão no setup, mas **nenhum** bug da implementação passou por ela: todos foram achados e corrigidos dentro do ciclo de revisão do Superpowers. Conto isso na retrospectiva do [capítulo 12](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/12-deploy-local-e-retrospectiva/). Ela deve fazer mais sentido para defeitos achados **depois** da implementação, quando não há mais uma rodada de revisão aberta.
 
+### Outras extensões do pacote
+
+O Spec Kit 1.2.0 traz mais três extensões no próprio pacote, instaláveis com `specify extension add <nome>`:
+
+| Extensão | Para quê |
+|---|---|
+| `assess` | avaliar uma ideia **antes** da spec, em cinco etapas (`intake`, `research`, `define`, `shape` e `decide`), com um veredito no fim: seguir para o `/speckit-specify` ou descartar |
+| `agent-context` | manter uma seção do Spec Kit atualizada no `CLAUDE.md`, com hooks opcionais depois da spec e do plano |
+| `github` | transformar as tarefas do `tasks.md` em issues no GitHub, em ordem de dependência |
+
+A `assess` merece atenção: ela é uma alternativa estruturada à ideação do [capítulo 03](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/03-ideacao/). Em vez de uma conversa livre até a visão do produto, cada etapa gera um documento em `.specify/assessments/<nome-da-ideia>/`, e a ideia só segue para a spec se passar pela decisão final. Não testei nenhuma das três.
+
 ### Extensões da comunidade
 
 O catálogo da comunidade tem extensões para quase todas as etapas. Alguns exemplos, para você ter uma ideia do que existe:
@@ -138,7 +152,9 @@ Não testei nenhuma delas. Para ver a lista atual e os nomes exatos, use `specif
 
 ## Plugins do Claude Code
 
-Um **plugin** é um pacote que pode trazer skills, agentes, hooks e servidores MCP de uma vez. O Superpowers, instalado no capítulo 02, é um plugin. Plugins são distribuídos por **marketplaces**, que são catálogos de plugins.
+Um **plugin** é um pacote que pode trazer skills, agentes, hooks e servidores MCP de uma vez. O Superpowers, instalado no [capítulo 02](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/02-dois-frameworks-uma-escolha/), é um plugin. Plugins são distribuídos por **marketplaces**, que são catálogos de plugins.
+
+Você já usou os dois jeitos de instalar: o Superpowers veio de um marketplace de terceiros, registrado com `claude plugin marketplace add obra/superpowers-marketplace` antes do `claude plugin install`. Os plugins do marketplace oficial dispensam esse registro.
 
 ### Os comandos
 
@@ -146,7 +162,7 @@ Dentro do Claude Code:
 
 ```text
 /plugin                                              # abre o painel, na aba de descoberta
-/plugin install commit-commands@claude-plugins-official
+/plugin install commit-commands@claude-plugins-official   # mostra os detalhes e pede o escopo antes de instalar
 /reload-plugins                                      # carrega o que foi instalado, sem reiniciar
 ```
 
@@ -209,17 +225,137 @@ Para instalar uma skill à mão, copie a pasta dela para um desses lugares. O `S
 Uma skill pode liberar ferramentas sem pedir sua aprovação (`allowed-tools`) e rodar comandos antes de o agente ler o texto (linhas com `` !`comando` ``). Leia o `SKILL.md` de toda skill que você não escreveu, inclusive as que já vêm num repositório clonado.
 :::
 
+## Várias funcionalidades em vez de uma
+
+No [capítulo 05](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/05-especificacao/), o `/speckit-specify` recebeu a aplicação inteira num texto só, e criou **uma** funcionalidade, `001-gestao-contratos-clientes`, com todas as histórias de usuário. Não foi uma escolha do Spec Kit: o comando cria uma funcionalidade por execução, com tudo o que estiver no texto. Como o texto descrevia o sistema todo, saiu uma funcionalidade só.
+
+Dá para fazer diferente: quebrar o sistema em várias funcionalidades (*features*), cada uma com a sua spec, o seu plano e as suas tarefas.
+
+### Como o Spec Kit lida com várias funcionalidades
+
+- **Cada `/speckit-specify` cria uma pasta nova** em `specs/`, com o próximo número livre (`001`, `002`, `003`…), e aponta o `.specify/feature.json` para ela.
+- **Os outros comandos trabalham na funcionalidade atual**: `clarify`, `plan`, `tasks`, `analyze` e `implement` usam a pasta que o `feature.json` aponta.
+- **A constituição é uma só** e vale para todas as funcionalidades.
+- **Para voltar a uma funcionalidade anterior**, mude o campo `feature_directory` do `.specify/feature.json`, ou defina a variável de ambiente `SPECIFY_FEATURE_DIRECTORY` com o caminho da pasta.
+- **Com a extensão `git`**, cada funcionalidade ganha também a sua branch (veja acima).
+
+### Uma ou várias?
+
+| | Uma funcionalidade | Várias funcionalidades |
+|---|---|---|
+| Tamanho da spec | grande, com todas as histórias | pequena, focada numa parte do sistema |
+| Clarificação | até cinco perguntas para o sistema inteiro | até cinco perguntas **por funcionalidade** |
+| Plano | decide tudo no começo, antes de existir código | cada plano parte do código que já existe |
+| Entrega | o sistema fica pronto no fim (as rodadas ajudam a dividir) | cada funcionalidade termina com spec, plano, código e validação |
+| Análise | o `/speckit-analyze` vê tudo junto | o `/speckit-analyze` só vê a funcionalidade atual |
+| Custo | menos ciclos | mais ciclos, e regras que cruzam funcionalidades pedem cuidado |
+
+Na minha opinião, vale quebrar quando o sistema tem partes que podem ser entregues e usadas separadamente, ou quando uma spec única ficaria com muitas histórias para clarificar de uma vez. Para estudar o processo, como neste tutorial, uma funcionalidade só deixa o caminho mais fácil de seguir.
+
+### Uma quebra sugerida para este projeto
+
+| # | Funcionalidade | O que entra | Depende de |
+|---|---|---|---|
+| 001 | `acesso` | login, logout, rotas protegidas, bloqueio após erros de senha, primeiro usuário (seed) e o esqueleto do projeto (banco, backend, frontend, menu lateral) | nada |
+| 002 | `clientes` | cadastro, lista com paginação e filtros por nome e CPF, CPF único | 001 |
+| 003 | `contratos` | cadastro com PDF, lista com filtros, detalhe e download do PDF; e a regra de não excluir cliente com contratos | 002 |
+| 004 | `analise-ia` | análise de riscos do PDF pelo serviço de IA, tempo-limite e aviso de indisponibilidade | 003 |
+| 005 | `painel-e-perfil` | Home com totais e gráfico por UF, e o perfil do usuário | 002 e 003 |
+
+Dois detalhes dessa quebra:
+
+- **A 001 carrega o esqueleto do projeto.** O primeiro plano decide a estrutura de pastas, o banco e a sessão, seguindo a constituição. Os planos seguintes reaproveitam o que já existe.
+- **Uma regra cruza duas funcionalidades.** "Não excluir cliente com contratos" muda o comportamento da 002, mas só faz sentido quando existem contratos. Por isso ela entra na 003, e a spec da 003 deve dizer explicitamente que altera a exclusão de clientes. Sem isso, o `/speckit-analyze` da 003 não tem como saber que a 002 existe.
+
+### Como pedir cada funcionalidade
+
+Faça **uma funcionalidade por vez, com o ciclo inteiro**: especificar, clarificar, planejar, gerar tarefas, analisar, implementar e validar. Só então comece a próxima. Assim o plano de cada funcionalidade parte de código real, e não de outro plano.
+
+O texto do `/speckit-specify` segue as dicas do capítulo 05, com três acréscimos. Por exemplo, para a 003:
+
+```text
+/speckit-specify Escreva a especificação em português do Brasil.
+
+Esta é a terceira de cinco funcionalidades da Aplicação de Gestão de Contratos de Clientes,
+descrita em docs/ideacao/visao-do-produto.md. O acesso (001) e os clientes (002) já existem.
+
+Esta funcionalidade cobre os contratos de compra e venda:
+<as regras dos contratos, como na seção "Contratos" do capítulo 05>
+- Esta funcionalidade altera a exclusão de clientes da 002: um cliente com contratos não pode
+  ser excluído.
+
+Fora do escopo desta funcionalidade: a análise dos contratos por IA e o painel.
+```
+
+Os três acréscimos são:
+
+1. **O contexto do sistema:** de qual sistema esta funcionalidade faz parte, onde está a visão do produto e o que já existe.
+2. **O que esta funcionalidade cobre:** só as regras dela, e as mudanças que ela faz em funcionalidades anteriores.
+3. **O que fica de fora:** o que pertence às outras funcionalidades, para o agente não adiantar trabalho.
+
+### Na prática: trocar de funcionalidade
+
+Você não precisa trocar nada para **começar** uma funcionalidade nova: o `/speckit-specify` cria a pasta e já aponta o `.specify/feature.json` para ela. Confira:
+
+```bash
+cat .specify/feature.json
+# {"feature_directory":"specs/003-contratos"}
+```
+
+A troca manual só é necessária para **voltar** a uma funcionalidade anterior. Por exemplo: você está na 003 e quer rodar o `/speckit-analyze` de novo na 002. Há três jeitos:
+
+1. **Pedir ao agente**, que é o mais simples:
+
+   ```text
+   Mude a funcionalidade atual do Spec Kit para specs/002-clientes, no .specify/feature.json.
+   ```
+
+2. **Editar o arquivo você mesmo**, num terminal:
+
+   ```bash
+   echo '{"feature_directory":"specs/002-clientes"}' > .specify/feature.json
+   ```
+
+   ```powershell
+   Set-Content .specify/feature.json '{"feature_directory":"specs/002-clientes"}'
+   ```
+
+3. **Usar a variável de ambiente** `SPECIFY_FEATURE_DIRECTORY`, definida **antes** de abrir o Claude Code, porque os scripts do Spec Kit leem o ambiente da sessão. Ela tem prioridade sobre o arquivo, e o Spec Kit grava o valor no `feature.json` na primeira vez que a usa.
+
+Depois de trocar, rode o comando que você queria (`/speckit-clarify`, `/speckit-plan`, `/speckit-analyze`…) e confira, no resumo do fim, se ele trabalhou na pasta certa. **Ao terminar, volte para a funcionalidade em que estava**, ou o próximo comando vai trabalhar na anterior.
+
+Dois detalhes:
+
+- **O `feature.json` não vai para o Git.** O Spec Kit o coloca no `.specify/.gitignore`, então cada pessoa (e cada clone) tem a sua funcionalidade atual.
+- **Com a extensão `git`, troque também a branch** (`git switch 002-clientes`) e confira o `feature.json` depois: a branch e a pasta da spec são coisas separadas.
+
+### Como fica a implementação
+
+A implementação segue os capítulos 09 e 10, com uma diferença: **cada funcionalidade tem o seu `tasks.md`**, e as tarefas começam de novo em `T001` em cada uma.
+
+- **O pedido aponta para o `tasks.md` da funcionalidade.** No pedido da rodada (capítulo 09), troque o caminho `specs/001-gestao-contratos-clientes/` por `specs/003-contratos/`, tanto no `tasks.md` quanto na spec.
+- **As rodadas são por funcionalidade.** Uma funcionalidade pequena pode caber numa rodada só. Dê às branches nomes que digam a funcionalidade, como `003-contratos-rodada-1`, para não confundir com o `T001` de outra.
+- **O ADR de rodadas (capítulo 10) ganha um quadro por funcionalidade.** As regras continuam as mesmas para todas.
+- **Faça o merge na `main` antes de planejar a próxima.** O `/speckit-plan` da 004 precisa ver o código da 003 já pronto, e não uma branch pela metade.
+- **Rode a suíte inteira, não só a da funcionalidade.** A 003 mexe na exclusão de clientes da 002: os testes da 002 devem continuar verdes.
+- **Valide cada funcionalidade com o `quickstart.md` dela** (capítulo 11), e repita os passos das anteriores que ela afeta.
+- **Se quiser, marque o fim de cada funcionalidade com uma tag**, como `feature-003-contratos`, para poder voltar a ela.
+
+Eu não fiz o laboratório assim, então não tenho resultado para mostrar: a quebra, os textos e o fluxo acima são uma sugestão.
+
 ## O que esperar
 
 - Se instalou a extensão `git`: `specify extension list` mostra `git`, e o próximo `/speckit-specify` cria uma branch nova.
 - Se instalou a extensão `bug`: `/speckit-bug` lista os três comandos depois de reiniciar o Claude Code.
 - Se instalou um plugin: `claude plugin list` o mostra, e os comandos dele aparecem com o prefixo do plugin.
+- Se quebrou o sistema em várias funcionalidades: uma pasta por funcionalidade em `specs/` (`001-…`, `002-…`), cada uma com a sua spec, o seu plano e as suas tarefas.
 
 ## Divergências comuns
 
 - **O comando novo não aparece.** Reinicie o Claude Code, ou use `/reload-plugins` no caso de plugins.
 - **`specify extension add` não acha a extensão.** As da comunidade ficam num catálogo só de consulta. Use `specify extension info <nome>` para achar o endereço do pacote e instale com `specify extension add <nome> --from <endereço>`.
 - **O hook não rodou.** Confira se ele está com `enabled: true` no `.specify/extensions.yml` e se a extensão não está desligada (`specify extension list`).
+- **Um comando trabalhou na funcionalidade errada.** Confira o `.specify/feature.json`: ele aponta para a última funcionalidade especificada. Ajuste o `feature_directory` para a pasta certa.
 - **O nome ou as opções mudaram.** Extensões e plugins evoluem rápido. Confira com `specify extension info` ou no painel do `/plugin`.
 
 ## O que aprendemos
@@ -227,3 +363,10 @@ Uma skill pode liberar ferramentas sem pedir sua aprovação (`allowed-tools`) e
 - **O Spec Kit e o Claude Code crescem por pacotes.** Extensões, plugins e skills resolvem atritos sem mudar o processo.
 - **Hooks encaixam automação nas etapas do SDD.** Obrigatórios rodam sozinhos; opcionais perguntam.
 - **Tudo o que você instala roda código no seu projeto.** Leia antes, instale só o que vai usar e desligue o que não usar.
+- **Uma funcionalidade por `/speckit-specify`.** O tamanho da funcionalidade é você quem decide, pelo texto que escreve.
+
+## O que vem a seguir
+
+Aqui o tutorial termina. Se quiser rever o caminho inteiro, a [visão geral](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/) lista todos os capítulos.
+
+Se você testar alguma dessas extensões, plugins ou skills no seu projeto, abra uma issue no [repositório do laboratório](https://github.com/leandropiga/arkhos.labs.sdd.contract/issues) e conte o que achou: é o tipo de experiência que pode virar um capítulo novo.
