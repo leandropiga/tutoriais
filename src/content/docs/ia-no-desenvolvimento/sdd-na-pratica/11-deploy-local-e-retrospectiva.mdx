@@ -5,9 +5,9 @@ description: "Deixar a aplicação rodando inteira na sua máquina, provar com u
 
 ## Onde estamos
 
-Décimo primeiro e último capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/10-validacao-e-dividas/) a validação manual passou e as cinco dívidas de produção fecharam. Se você chegou direto aqui, precisa da aplicação completa, com as seis histórias e a rodada 7 mergeadas.
+Décimo primeiro e último capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/10-validacao-e-dividas/) a validação manual passou e as cinco dívidas de produção fecharam.
 
-**Ponto de partida:** o seu projeto ao fim do capítulo 10, com a rodada 7 mergeada. Se você chegou direto, use a tag `fase-6-validacao` do laboratório e faça antes a rodada 7 do capítulo 10.
+**Ponto de partida:** o seu projeto ao fim do capítulo 10, com a rodada 7 mergeada.
 **Tag de chegada:** `fase-8-retrospectiva`. A tag `fase-7-deploy` marca o fim do deploy local, antes da retrospectiva.
 
 ## O que vamos fazer e por quê
@@ -30,8 +30,8 @@ Cada otimização cria um modo de falha novo. A resposta é tratá-lo, não esco
 "Roda na minha máquina" não prova nada. O teste de verdade é começar do zero: clonar numa pasta limpa, sem nenhum arquivo seu, e fazer tudo do início.
 
 ```bash
-# se você refez o projeto, clone o SEU repositório; aqui uso o do laboratório
-git clone https://github.com/leandropiga/arkhos.labs.sdd.contract.git clone-limpo
+# fora da pasta do projeto; use o nome que você deu ao repositório no capítulo 02
+gh repo clone tutorial.sdd.contract clone-limpo
 cd clone-limpo
 cp backend/.env.test.example backend/.env.test
 (cd backend && npm ci && npx vitest run)
@@ -137,7 +137,7 @@ git push origin fase-7-deploy fase-8-retrospectiva
 - **Você quer publicar em nuvem.** O laboratório não validou isso. Comece pela lista de pontos de atenção acima, e trate o que você descobrir como um novo ciclo de SDD: spec do que muda, plano, tarefas, análise.
 - **A sua retrospectiva concluiu o contrário da minha** (por exemplo, que o fluxo `bug` vale a pena, ou que SDD é pesado demais). Não tem certo ou errado. Escreva por quê.
 
-Para retomar do meu ponto: `git checkout fase-8-retrospectiva`.
+**Para comparar com o laboratório:** tags [`fase-7-deploy`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-7-deploy) e [`fase-8-retrospectiva`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-8-retrospectiva).
 
 ## O que isso mostrou
 

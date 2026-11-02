@@ -5,9 +5,9 @@ description: "Como executar o tasks.md com o Superpowers, usando worktree, um su
 
 ## Onde estamos
 
-Oitavo capítulo. Até aqui só escrevemos documentos. Se você chegou direto, precisa de um repositório com a constituição, a spec esclarecida, o plano e o `tasks.md` (78 tarefas, já analisado), e o Superpowers instalado.
+Oitavo capítulo. Até aqui só escrevemos documentos.
 
-**Ponto de partida:** o seu projeto ao fim do capítulo 07, com as tarefas analisadas. Se você chegou direto, use a tag `fase-4-tarefas` do laboratório e refaça a análise do capítulo 07.
+**Ponto de partida:** o seu projeto ao fim do capítulo 07, com as tarefas analisadas.
 **Tag de chegada:** `fase-5a-rodada-1` (o fim da primeira rodada, tarefas T001 a T035).
 
 ## O que vamos fazer e por quê
@@ -143,7 +143,14 @@ Cada uma foi corrigida com o teste escrito antes.
 
 ### 7. Mergear e fechar a rodada
 
-O agente parou, como pedi. Revisei, e o merge na `main` (com push) foi o "commit de etapa" da rodada. A tag `fase-5a-rodada-1` marca esse ponto no laboratório. Crie uma tag parecida no seu repositório para poder voltar aqui. A tag oficial da fase 5 só sai na última rodada.
+O agente parou, como pedi. Revisei, e o merge na `main` (com push) foi o "commit de etapa" da rodada. Depois do merge, já na `main`, marque esse ponto com uma tag:
+
+```bash
+git tag -a fase-5a-rodada-1 -m "Fase 5a - Rodada 1 concluida"
+git push origin fase-5a-rodada-1
+```
+
+Ela é uma tag intermediária, para você poder voltar ao fim da primeira rodada. A tag oficial da fase 5 (`fase-5-implementacao`) só sai na última rodada, no capítulo 09.
 
 ## O que esperar
 
@@ -151,6 +158,7 @@ O agente parou, como pedi. Revisei, e o merge na `main` (com push) foi o "commit
 - Um commit por tarefa, com `[X]` no `tasks.md`.
 - Um ledger em `.superpowers/sdd/` com os Rulings.
 - Suítes verdes ao fim e uma lista de Rulings para você ler.
+- A tag `fase-5a-rodada-1` no remoto, no merge da rodada 1.
 
 Para conferir: rode `npx vitest run` em `backend/` e em `frontend/`. Se passar, leia os Rulings. **Se você não ler os Rulings, você aceitou decisões que não conhece.**
 
@@ -174,7 +182,7 @@ Eu usei a terceira porque quis ver o que a revisão por tarefa pega. Se o seu pr
 - **Subagente mexeu fora do projeto** (veja o aviso abaixo). Aconteceu comigo.
 - **Você quer outro nome de branch ou de worktree.** Sem problema; só mantenha os dois fáceis de achar.
 
-Para retomar do meu ponto: `git checkout fase-5a-rodada-1`.
+**Para comparar com o laboratório:** tag [`fase-5a-rodada-1`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-5a-rodada-1).
 
 ## O que isso mostrou
 

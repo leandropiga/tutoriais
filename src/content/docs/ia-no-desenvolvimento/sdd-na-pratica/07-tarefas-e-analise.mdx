@@ -5,16 +5,10 @@ description: Quebrar o plano em tarefas com critério de pronto e usar o /specki
 
 ## Onde estamos
 
-Sétimo capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/06-o-plano-que-pegou-o-bug/) o plano técnico saiu e corrigiu o limite do PDF para 50 MB. Se você chegou direto aqui, precisa dos cinco documentos do plano em `specs/001-gestao-contratos-clientes/`: `plan.md`, `research.md`, `data-model.md`, `contracts/api.md` e `quickstart.md`.
+Sétimo capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/06-o-plano-que-pegou-o-bug/) o plano técnico saiu e corrigiu o limite do PDF para 50 MB.
 
-**Tag de partida:** `fase-3-planejamento`.
-**Ponto de chegada:** as tarefas analisadas e corrigidas. A tag `fase-4-tarefas` do laboratório marca o ponto logo depois de gerar as tarefas e **antes** da análise.
-
-```bash
-git clone https://github.com/leandropiga/arkhos.labs.sdd.contract.git
-cd arkhos.labs.sdd.contract
-git checkout fase-3-planejamento
-```
+**Ponto de partida:** o seu projeto ao fim do capítulo 06, com o plano técnico pronto.
+**Tag de chegada:** `fase-4-tarefas` (as tarefas analisadas e corrigidas).
 
 ## O que vamos fazer e por quê
 
@@ -147,15 +141,21 @@ Nenhuma correção mudou a numeração das tarefas, e nenhum comando precisou se
 
 No meu caso: **zero achados.** Cobertura de 100% dos 40 requisitos, nenhum conflito com a constituição, 78 tarefas no formato certo. Rodar de novo é a prova de que a correção não abriu outro buraco.
 
-### 9. Registre o ponto
+### 9. Feche a fase com uma tag
 
-Commite as correções e a segunda análise limpa. Esse commit é o fim da fase 4. (No laboratório, a tag `fase-4-tarefas` ficou um commit antes, logo depois de gerar as tarefas e antes da análise.)
+Commite as correções e a segunda análise limpa. Esse commit é o fim da fase 4, e é nele que vai a tag:
+
+```bash
+git tag -a fase-4-tarefas -m "Fase 4 - Tarefas analisadas"
+git push origin fase-4-tarefas
+```
 
 ## O que esperar
 
 - Um `tasks.md` com tarefas no formato `- [ ] T0xx [P] [USn] descrição com caminho de arquivo`, agrupadas por história.
 - Em cada história, tarefas de teste antes das de implementação, com "até T0xx passar" como critério de pronto.
 - Um relatório de análise com achados (os meus foram 10; os seus podem ser mais ou menos) e uma segunda rodada limpa depois das correções.
+- A tag `fase-4-tarefas` no remoto, no commit das correções.
 
 Para conferir: depois da segunda análise, o relatório deve dizer que não há achados críticos ou altos, e que cada requisito tem pelo menos uma tarefa.
 
@@ -167,7 +167,7 @@ Para conferir: depois da segunda análise, o relatório deve dizer que não há 
 - **A análise sugeriu mudar a constituição.** Pode ser o certo. Mas faça isso de forma explícita, com o `/speckit-constitution` e um registro da decisão, e não aceite um conflito calado.
 - **O analyze apontou o vazamento do usuário no login e você quer proteger também.** Pode. Vale uma tarefa e um teste a mais. Eu aceitei o risco por escrito porque o sistema tem um único usuário.
 
-Para retomar do meu ponto: `git checkout fase-4-tarefas` e refaça a análise deste capítulo.
+**Para comparar com o laboratório:** tag [`fase-4-tarefas`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-4-tarefas). Lá ela marca o ponto logo depois de gerar as tarefas e **antes** da análise, então as correções deste capítulo não estão nela.
 
 ## O que isso mostrou
 

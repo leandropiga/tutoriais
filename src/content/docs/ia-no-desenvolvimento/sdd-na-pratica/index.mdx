@@ -66,8 +66,9 @@ O que posso afirmar sobre as atividades durante todo o desenvolvimento foi:
 - As etapas de documento (constituição, especificação, plano, tarefas) são baratas perto da
   implementação.
 
-Considere que reproduzir tudo é um projeto de **dias**, não de uma tarde. Dá para parar em qualquer
-capítulo: cada um termina com uma tag no repositório para você retomar de onde quiser.
+No meu caso, o projeto inteiro levou alguns **dias**. O seu tempo vai depender do seu ritmo e de
+quanto você se aprofunda em cada etapa. Dá para parar em qualquer capítulo e continuar depois, no
+**seu** projeto, de onde você parou.
 
 ## A IA vai divergir do que está escrito
 
@@ -76,14 +77,9 @@ muda, o contexto muda, e duas execuções do mesmo prompt resultam em textos dif
 
 1. Os prompts estão copiáveis e na íntegra, mas a resposta que você recebe vai variar.
 2. Cada capítulo diz **o que esperar** e como conferir que deu certo, sem depender do texto exato.
-3. O repositório do laboratório tem uma **tag por ponto de partida e de chegada**. Se o seu
-   caminho se afastar demais, você faz o checkout da tag e segue dali.  Exemplo:
-
-```bash
-git clone https://github.com/leandropiga/arkhos.labs.sdd.contract.git
-cd arkhos.labs.sdd.contract
-git checkout fase-3-planejamento   # exemplo: o ponto onde o capítulo 06 termina
-```
+3. Você constrói o projeto **do zero**, no seu repositório. O laboratório não é ponto de partida:
+   é só uma referência. Se o seu resultado se afastar demais do meu, compare com a tag
+   correspondente do laboratório, que cada capítulo indica no final.
 
 ## Os capítulos
 
@@ -105,5 +101,13 @@ git checkout fase-3-planejamento   # exemplo: o ponto onde o capítulo 06 termin
 
 Todo o material de apoio (código, decisões e as tags) está em
 [github.com/leandropiga/arkhos.labs.sdd.contract](https://github.com/leandropiga/arkhos.labs.sdd.contract).
+Use-o para consultar e comparar, não como base do seu projeto.
+
+:::note[A ordem das tags no laboratório]
+No laboratório, eu fiz a ideação **antes** de instalar o Spec Kit e o Superpowers. Por isso, lá, a
+tag `fase-1-ideacao` é anterior à `fase-0-setup`, e a `fase-0-setup` já traz a ideação junto.
+No tutorial a ordem é a do seu projeto: setup (capítulo 02), ideação (03), constituição (04). As
+suas tags vão sair em sequência.
+:::
 
 [Começar pelo capítulo 01 →](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/01-do-vibe-coding-ao-sdd/)

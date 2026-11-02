@@ -5,7 +5,7 @@ description: O /speckit-clarify faz até cinco perguntas sobre a sua própria sp
 
 ## Onde estamos
 
-Quinto capítulo, o mais importante do tutorial. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/04-constituicao-e-especificacao/) escrevemos a constituição e a especificação. Se você chegou direto aqui, precisa de uma spec em `specs/001-gestao-contratos-clientes/spec.md` com três marcadores `[NEEDS CLARIFICATION]` no texto.
+Quinto capítulo, o mais importante do tutorial. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/04-constituicao-e-especificacao/) escrevemos a constituição e a especificação.
 
 **Ponto de partida:** o seu projeto ao fim do capítulo 04 (a spec recém-criada, antes da clarificação). Não existe tag aqui, porque a fase 2 só fecha no fim deste capítulo.
 **Tag de chegada:** `fase-2-especificacao`.
@@ -92,12 +92,22 @@ O checklist de qualidade foi de 15/16 para **16/16**: não sobrou nenhum `[NEEDS
 
 Duas dúvidas ficaram de fora por baixo impacto: como criar o primeiro usuário (já estava nas Premissas) e se CPF e RG devem ser mascarados nas listagens (LGPD). Nenhuma impedia o plano.
 
+### 5. Feche a fase com uma tag
+
+A fase 2 começou no capítulo 04, com a constituição e a especificação, e termina aqui, com a clarificação.
+
+```bash
+git tag -a fase-2-especificacao -m "Fase 2 - Especificacao concluida"
+git push origin fase-2-especificacao
+```
+
 ## O que esperar
 
 - Cinco perguntas (ou menos), uma por vez, cada uma com recomendação e opções.
 - Uma seção `## Clarifications` no topo do `spec.md`, com data e as perguntas e respostas.
 - Requisitos e histórias ajustados conforme as respostas.
 - Checklist de qualidade completo e zero marcadores `[NEEDS CLARIFICATION]`.
+- A tag `fase-2-especificacao` no remoto.
 
 Para conferir: abra o `spec.md`, procure por `NEEDS CLARIFICATION` (não deve achar nada) e leia a seção `Clarifications`.
 
@@ -109,7 +119,7 @@ Para conferir: abra o `spec.md`, procure por `NEEDS CLARIFICATION` (não deve ac
 - **Você quer corrigir o limite do PDF para 50 MB já agora.** Pode, mas aí você perde a cena do próximo capítulo, em que o plano descobre o conflito sozinho. Eu recomendo seguir com 100 MB para ver acontecer.
 - **A resposta não foi aplicada em todos os lugares.** Rode o comando de novo, ou peça ao agente para procurar no `spec.md` tudo que depende daquela resposta.
 
-Tag de chegada: `git checkout fase-2-especificacao`.
+**Para comparar com o laboratório:** tag [`fase-2-especificacao`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-2-especificacao).
 
 ## O que isso mostrou
 

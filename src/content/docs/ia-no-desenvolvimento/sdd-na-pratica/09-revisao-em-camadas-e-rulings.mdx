@@ -5,16 +5,10 @@ description: As rodadas 2 a 6 e o que só a revisão final da branch achou (roda
 
 ## Onde estamos
 
-Nono capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/08-implementar-com-subagentes/) rodei a primeira rodada, o MVP de login, e a revisão final ainda achou quatro problemas sérios. Se você chegou direto aqui: precisa do projeto no ponto em que o login funciona e um ADR com a decisão de implementar por rodadas está no repositório.
+Nono capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/08-implementar-com-subagentes/) rodei a primeira rodada, o MVP de login, e a revisão final ainda achou quatro problemas sérios.
 
-**Tag de partida:** `fase-5a-rodada-1`.
+**Ponto de partida:** o seu projeto ao fim do capítulo 08, com a rodada 1 mergeada.
 **Tag de chegada:** `fase-5-implementacao` (as rodadas 2 a 6 mergeadas; a validação manual e as dívidas vêm nos capítulos seguintes).
-
-```bash
-git clone https://github.com/leandropiga/arkhos.labs.sdd.contract.git
-cd arkhos.labs.sdd.contract
-git checkout fase-5a-rodada-1
-```
 
 ## O que vamos fazer e por quê
 
@@ -151,7 +145,7 @@ cd frontend && npm run build && grep -ri GEMINI dist   # deve voltar vazio
 - **O agente criou arquivo temporário fora do worktree.** Aconteceu na rodada 2 (ele mesmo apagou). Mesma lição do capítulo anterior: diga o que ele **não** pode fazer.
 - **Relatório de subagente diz "verde", mas você não confia.** Faça bem: rode a suíte você mesmo depois do relatório. É barato e fecha a conta.
 
-Para retomar do meu ponto: `git checkout fase-5-implementacao`.
+**Para comparar com o laboratório:** tag [`fase-5-implementacao`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-5-implementacao).
 
 ## O que isso mostrou
 

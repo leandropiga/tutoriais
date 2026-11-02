@@ -5,15 +5,13 @@ description: Por que eu uso o Spec Kit e o Superpowers juntos, sem dizer que é 
 
 ## Onde estamos
 
-Segundo capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/01-do-vibe-coding-ao-sdd/) vimos o que é SDD e o que ele muda em relação ao vibe coding. Agora vamos escolher as ferramentas e montar o laboratório. Se você chegou direto aqui, não perdeu nada de código: o capítulo 01 é só conceito.
+Segundo capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/01-do-vibe-coding-ao-sdd/) vimos o que é SDD e o que ele muda em relação ao vibe coding. Agora vamos escolher as ferramentas e montar o projeto. Se você chegou direto aqui, não perdeu nada de código: o capítulo 01 é só conceito.
 
-**Tag de partida:** nenhuma. Você começa de uma pasta vazia.
-**Tag de chegada:** `fase-0-setup` (no [laboratório](https://github.com/leandropiga/arkhos.labs.sdd.contract)).
+**Ponto de partida:** uma pasta vazia.
+**Tag de chegada:** `fase-0-setup`.
 
 :::note[Aqui a ordem é diferente da do laboratório]
-No laboratório, eu fiz a ideação (capítulo 03) **antes** de instalar o Spec Kit e o Superpowers. Só que, no tutorial, faz mais sentido você preparar as ferramentas primeiro e só depois pensar na ideia. Por isso a ordem aqui é: setup (este capítulo), ideação (03), constituição (04).
-
-Isso tem um efeito na tag. A `fase-0-setup` já traz o resultado da ideação junto, porque no laboratório as duas coisas entraram juntas.
+No tutorial, você prepara as ferramentas primeiro e só depois pensa na ideia: setup (este capítulo), ideação (03), constituição (04). Essa é a ordem certa para o seu projeto, e as suas tags vão sair em sequência. No laboratório eu fiz a ideação antes da instalação, por isso lá as tags estão em outra ordem (detalhes na [página inicial](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/)).
 :::
 
 ## O que vamos fazer e por quê
@@ -274,12 +272,22 @@ gh repo create tutorial.sdd.contract --private --source . --remote origin --push
 
 Eu usei `--private` durante o desenvolvimento. Se você só quer acompanhar o tutorial, tanto faz; escolha o que preferir. O `--source .` cria o repositório, configura o `origin` e já faz o push, tudo de uma vez.
 
+### 9. Feche a fase com uma tag
+
+```bash
+git tag -a fase-0-setup -m "Fase 0 - Setup concluido"
+git push origin fase-0-setup
+```
+
+É assim que você volta a este ponto com `git checkout fase-0-setup`.
+
 ## O que esperar
 
 - `specify --version` mostra `1.2.0` (ou mais nova).
 - `claude plugin list` mostra o Superpowers 7.0.0 ou mais novo.
 - Depois de reiniciar, `/speckit` lista pelo menos `speckit-constitution`, `speckit-specify`, `speckit-clarify`, `speckit-plan`, `speckit-tasks`, `speckit-analyze` e `speckit-implement`.
 - A pasta tem `CLAUDE.md`, `.specify/`, `.claude/` e `docs/decisoes/`, e o repositório existe no GitHub.
+- A tag `fase-0-setup` no remoto.
 
 ## Divergências comuns
 
@@ -288,8 +296,9 @@ Eu usei `--private` durante o desenvolvimento. Se você só quer acompanhar o tu
 - **O Superpowers entrega uma versão mais velha ou mais nova que a minha.** Pode acontecer: o plugin evolui. O nome dos comandos pode mudar um pouco. O que importa para o tutorial são os papéis (brainstorming, planos, TDD, subagentes), que se mantêm. Anote a sua versão.
 - **O `specify init` avisa para ignorar `.claude/` no Git.** Alguns agentes guardam credenciais ali. Neste tutorial a gente **versiona** `.claude/settings.json` e `.claude/skills/` de propósito, e deixa o que é pessoal (`.claude/settings.local.json`) no `.gitignore`.
 - **O `uv` não está instalado ou o Python é diferente.** O `uv` cuida do Python para você. Instale pelo site oficial.
+- **O Claude já criou a tag `fase-0-setup` sozinho.** Normal: o `CLAUDE.md` do passo 3 pede uma tag ao fim de cada fase. Confira com `git tag` e `git ls-remote --tags origin` e pule o passo 9.
 
-**Para retomar do meu ponto:** `git clone https://github.com/leandropiga/arkhos.labs.sdd.contract.git` e `git checkout fase-0-setup`.
+**Para comparar com o laboratório:** tag [`fase-0-setup`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-0-setup). Lá ela já traz a ideação do capítulo 03 junto (veja a nota sobre a ordem das tags na [página inicial](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/)).
 
 ## O que isso mostrou
 
