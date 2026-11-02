@@ -1,0 +1,215 @@
+---
+title: 10. Revisão em camadas
+description: As demais rodadas de implementação e o que cada camada de revisão consegue pegar, da revisão por tarefa à revisão final da branch. Mais os Rulings de cada rodada, salvos no repositório.
+---
+
+## Onde estamos
+
+No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/09-implementacao/) você rodou a primeira rodada (Setup, Fundação e login), leu os Rulings e fez o merge na `main`.
+
+**Ponto de partida:** o seu projeto ao fim do capítulo 09, com a rodada 1 mergeada (tag `fase-5a-rodada-1`).
+**Tag de chegada:** `fase-5-implementacao` (todas as histórias e o Acabamento mergeados; a validação manual e as dívidas vêm nos capítulos seguintes).
+
+## O que vamos fazer e por quê
+
+Repetir o ciclo do capítulo anterior para o resto do `tasks.md`, em rodadas pequenas: **uma rodada por história de usuário**, e o Acabamento numa rodada própria. Monte as rodadas a partir do **seu** `tasks.md`.
+
+No meu caso, ficaram assim:
+
+| Rodada | Tarefas | Entrega |
+|---|---|---|
+| 2 | T036 a T046 | História 2: clientes |
+| 3 | T047 a T057 | História 3: contratos com PDF (até 50 MB) |
+| 4 | T058 a T065 | História 4: análise de riscos por IA |
+| 5 | T066 a T073 | Histórias 5 e 6: painel da Home e perfil |
+| 6 | T074 a T077 | Acabamento: segurança, desempenho, bundle sem chave, README |
+
+Juntei as histórias 5 e 6 numa rodada só porque eram pequenas. Você pode fazer o mesmo, se fizer sentido para a sua lista.
+
+O foco deste capítulo não é o código. É **entender o que cada camada de revisão pega**. O fluxo tem duas:
+
+- **Revisão por tarefa**: um revisor confere a tarefa isolada (aderência à spec e qualidade).
+- **Revisão final da branch**: um revisor lê a rodada inteira.
+
+E um registro: os **Rulings**, as decisões que o agente tomou sozinho, salvos em `docs/rulings.md` no fim de cada rodada, porque o ledger fica fora do Git e é apagado quando a rodada termina.
+
+## Passo a passo
+
+### 1. Registre as regras das rodadas
+
+O pedido da rodada 1 tinha 12 regras. Repetir tudo a cada rodada é cansativo e abre espaço para esquecer uma. A saída é escrever as regras **no repositório**, num ADR, e deixar o pedido de cada rodada curto. Cole no Claude Code:
+
+```text
+Registre num ADR em docs/decisoes/, chamado "Implementação por rodadas", e liste no README das
+decisões:
+
+1. As 12 regras do pedido da rodada 1 (o fluxo subagent-driven-development, o tasks.md como
+   plano, a spec como autoridade, worktree em .worktrees/, TDD, commits, versões do research.md,
+   .env locais, parar antes de merge e push, suítes e Rulings salvos em docs/rulings.md no fim,
+   e o que os subagentes não podem fazer).
+2. O quadro de rodadas, montado a partir do tasks.md: uma rodada por história de usuário e o
+   Acabamento numa rodada própria, com o intervalo de tarefas de cada uma e o nome da branch.
+
+Depois, cite esse ADR no CLAUDE.md, dizendo que ele vale para todo pedido de rodada.
+```
+
+Confira o quadro de rodadas que ele montou: os intervalos devem bater com o seu `tasks.md`.
+
+Antes de seguir, garanta que os Rulings da rodada 1 estão em `docs/rulings.md`. Se não estiverem, peça ao agente para salvá-los a partir da lista que ele mostrou no fim da rodada, ainda na conversa.
+
+### 2. Peça a rodada seguinte
+
+Com o ADR no repositório, o pedido pode ser curto:
+
+```text
+Inicie a rodada 2, seguindo o ADR de implementação por rodadas.
+```
+
+Se o agente perguntar se pode continuar no meio da rodada:
+
+```text
+Pode seguir, me avise só ao fim da rodada.
+```
+
+O agente deduz o resto do que está escrito: o escopo vem do quadro de rodadas e das tarefas ainda sem `[X]`; o worktree, a branch, as paradas e os `.env` vêm das regras do ADR. **Um `CLAUDE.md` e um ADR bons valem mais que um prompt comprido.**
+
+Se preferir não criar o ADR, escreva o escopo por extenso a cada rodada, e repita as regras do pedido da rodada 1:
+
+```text
+Execute as tarefas T036 a T046 do tasks.md com o superpowers:subagent-driven-development, num
+worktree em .worktrees/, e pare ao concluir a T046. Siga as mesmas regras da rodada 1: <cole as
+regras aqui>.
+```
+
+**Dica: agrupe tarefas pequenas.** Quando várias tarefas pequenas e relacionadas estão em sequência (por exemplo, três testes do mesmo módulo), você pode pedir:
+
+```text
+Pode agrupar tarefas pequenas e relacionadas num mesmo despacho de subagente, mantendo um commit
+por tarefa.
+```
+
+Isso corta despachos e revisões sem perder o rastreio, porque o commit continua sendo por tarefa.
+
+### 3. Confira o worktree antes de começar
+
+Um worktree novo **não traz** `node_modules`, os `.env` nem o client gerado do Prisma (que fica fora do Git). Pela regra dos `.env`, o agente deve preparar isso sozinho. Confira no início da rodada se ele:
+
+- instalou as dependências do backend e do frontend;
+- gerou o client do Prisma;
+- criou os `.env` locais a partir dos exemplos;
+- **rodou a suíte antes de mexer**, para ter a linha de base. Sem ela, "tudo verde" depois não prova nada.
+
+No meu caso, em algumas rodadas eu preparei o worktree à mão, com estes comandos:
+
+```bash
+git worktree add .worktrees/005-rodada-5-painel-perfil -b 005-rodada-5-painel-perfil main
+cd .worktrees/005-rodada-5-painel-perfil
+cp backend/.env.example backend/.env
+cp backend/.env.test.example backend/.env.test
+(cd backend && npm ci && npx prisma generate)
+(cd frontend && npm ci)
+```
+
+### 4. Leia o que as revisões pegaram
+
+No fim de cada rodada, leia duas coisas:
+
+- **a revisão final da branch**: o que ela achou e o que foi corrigido;
+- **os achados das revisões por tarefa**, que o agente resume no fim, ou que você pede: "liste os problemas que as revisões por tarefa acharam nesta rodada".
+
+Para cada achado, pergunte: "por que a camada anterior não pegou isso?". A resposta é a lição da rodada.
+
+No meu caso, cada rodada trouxe um tipo de achado diferente:
+
+**Rodada 1 (capítulo anterior): bloqueio de login furado por concorrência.** Cinquenta tentativas simultâneas foram todas verificadas, contra o critério de que o bloqueio vale após cinco erros. Cada tarefa estava certa sozinha; o furo morava na costura. *Lição: a revisão final vê o que nenhuma tarefa vê sozinha.*
+
+**Rodada 2: mensagens duplicadas.** O zod 4 não interrompe a cadeia de checagens. Um RG vazio devolvia "Informe o RG." **e** "O RG deve ter ao menos 1 caracteres." para o mesmo campo, na resposta pública da API. Quase invisível na tela (o formulário barra o vazio antes), mas com português errado. O defeito passou por **três** revisões de tarefa; só o olhar de conjunto, com um script que provou o caso, o tornou relevante. Na mesma onda: um byte NUL num campo de texto dava erro 500 (o Postgres recusa; passou a ser 400).
+
+**Rodada 2, de novo: a correção do NUL criou um problema novo.** O agente escreveu o byte NUL **literal** dentro do código, em vez do escape `'\u0000'`. O Git passou a tratar o arquivo como binário e o arquivo foi regravado em CRLF; o diff virou "Binary files differ". Uma re-revisão **só do diff das correções** (não a revisão final) pegou, e o conserto foi trocar o byte pelo escape e regravar em LF:
+
+```bash
+git ls-files --eol backend/src/modules/clientes/esquemas-clientes.ts
+# i/lf    w/lf    attr/text=auto eol=lf
+```
+
+*Lição: correção também precisa de revisão.* Sem a re-revisão, o problema teria ido para a `main`.
+
+**Rodada 4: o mock que esconde o bug** (pego pela revisão da tarefa). O aviso de "IA fora do ar" mostrava a mensagem que vinha do backend, diferente do texto que a spec manda. O teste não pegava, porque o mock já devolvia o texto certo. O teste só ficou honesto quando o mock passou a devolver a mensagem **real** do backend. *Lição: um teste verde nem sempre é um teste honesto.*
+
+Na mesma rodada, duas corridas (a análise de um PDF antigo sendo gravada como se fosse do novo; e o `finally` liberando a trava de qualquer análise, não só a própria) e uma data no dia errado (cortada em UTC; no Brasil, UTC-3, uma análise às 22h30 aparecia no dia seguinte). *Lição: as corridas foram achadas lendo, não rodando.*
+
+**Rodadas 5 e 6:** sem nada Crítico ou Importante. Na 5, o botão "Sair" mudou de lugar e dois testes antigos precisaram de ajuste; o revisor conferiu que nenhuma asserção ficou mais fraca. Na 6 (testes transversais de segurança e desempenho), tudo passou de primeira, e isso é esperado: o valor desses testes é travar a regressão, não achar bug hoje.
+
+Os seus achados vão ser outros. O que vale levar é o tipo de pergunta: costura entre tarefas, correção sem revisão, mock otimista, concorrência.
+
+### 5. Leia e salve os Rulings
+
+No fim de cada rodada, leia os Rulings como no capítulo anterior (concorda, discorda e pede correção, ou registra num ADR), e confira se eles foram salvos em `docs/rulings.md`, numa seção da rodada.
+
+No meu caso, alguns Rulings dessas rodadas, com o custo se estiverem errados:
+
+| Rodada | Decisão | Custo se errado |
+|---|---|---|
+| 2 | UF em minúscula (`sp`) é rejeitada com 400, porque o modelo de dados lista as 27 siglas em maiúsculas | trocar o teste e usar `.toUpperCase()` |
+| 3 | 413 no frontend mostra texto fixo ("O arquivo é muito grande. O limite é de 50 MB.") | trocar por `erro.mensagem` |
+| 4 | `PUT` trocando o PDF durante uma análise: o resultado é descartado com `409 ANALISE_EM_ANDAMENTO`; o contrato da API não dizia nada sobre isso | trocar código ou mensagem |
+| 4 | Corrida estreita no `PUT` adiada: a transação confirma **antes** de o PDF novo ser renomeado no disco | pode gravar análise do PDF antigo |
+| 5 | `PUT /api/perfil` é substituição completa: campo omitido vira `null` | quem mandar só o `nome` apaga foto e telefone sem aviso |
+
+Repare no Ruling da rodada 4: uma janela de corrida minúscula, **conscientemente adiada**. Ela voltou a aparecer no capítulo 11 e foi fechada lá. Um Ruling de "adiar" é uma dívida: anote-a para não perder.
+
+### 6. Feche cada rodada
+
+Mesma sequência do capítulo anterior:
+
+1. O agente para antes do merge e mostra as três opções.
+2. Escolha o merge local. O fluxo roda os testes de novo sobre o resultado e remove o worktree.
+3. Com os testes verdes na `main`, faça o push: `git push origin main`.
+
+Ao fim da rodada do **Acabamento**, a última desta fase, marque o fim da implementação:
+
+```bash
+git tag -a fase-5-implementacao -m "Fase 5 - Implementacao concluida"
+git push origin fase-5-implementacao
+```
+
+## O que esperar
+
+- Uma rodada mergeada por história, mais a do Acabamento, cada uma com commits por tarefa e `[X]` no `tasks.md`.
+- A suíte crescendo a cada rodada, sempre verde na `main`. No meu caso, depois da rodada 6, o backend estava em 302 testes e o frontend em 75.
+- Os Rulings de todas as rodadas, incluindo a 1, em `docs/rulings.md`.
+- Uma lista de **dívidas anotadas** por rodada (itens menores adiados de propósito).
+- A tag `fase-5-implementacao` no remoto.
+
+Para conferir: rode a suíte dos dois pacotes (`npx vitest run`) e `npx tsc --noEmit` no backend. Depois confira que o bundle do frontend não leva a chave da IA:
+
+```bash
+cd frontend && npm run build && grep -r "GEMINI_API_KEY\|AIza" dist   # deve voltar vazio
+```
+
+O `AIza` é o começo das chaves de API do Google. Se o `grep` achar alguma coisa, a chave vazou para o navegador.
+
+## Divergências comuns
+
+- **Os seus achados são outros, ou a revisão final não achou nada.** Esperado: o código gerado varia. O que importa é manter as duas camadas de revisão e **ler** a revisão final. Se ela voltar vazia sempre, desconfie do prompt do revisor.
+- **O limite de uso da API derrubou o revisor no meio do trabalho.** O agente derrubado guarda o que fez. Quando o limite liberar, diga "pode seguir": no meu caso, o agente retomou o revisor do ponto onde parou.
+- **O `task-brief` da skill deu "task N not found".** O script procura títulos "Task N", e o `tasks.md` do Spec Kit usa `T036`. É um atrito de juntar as duas ferramentas. No meu caso, montei os pedidos à mão, copiando as linhas das tarefas; aceite o pedido manual desde o começo.
+- **A sessão foi interrompida no meio de uma rodada.** Peça ao agente para ler o ledger e o `git log` antes de continuar: o que está lá existe. No meu caso, a rodada 3 começou numa sessão e terminou em outra, e o ledger evitou refazer tarefas prontas.
+- **O agente criou arquivo temporário fora do worktree.** Mesma lição do capítulo anterior: diga o que ele **não** pode fazer, e acrescente isso às regras do ADR.
+- **Relatório de subagente diz "verde", mas você não confia.** Confira você mesmo: rode a suíte depois do relatório. É barato e fecha a conta.
+
+**Para comparar com o laboratório:** tag [`fase-5-implementacao`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-5-implementacao).
+
+## O que aprendemos
+
+- **Revisão em camadas se paga.** A de tarefa pega defeitos locais; a final pega o que só se vê no conjunto. Nos casos da revisão final, cada peça estava certa sozinha, e o problema morava na costura.
+- **Concorrência é onde a revisão mais paga.** Ler achou o que rodar não achou.
+- **Correção também precisa de revisão.**
+- **Mock que devolve a resposta certa esconde o bug.**
+- **Deixar o agente decidir só é seguro se as decisões ficarem escritas.** Os Rulings são a caixa-preta do processo, e o ledger é o mapa de recuperação enquanto a rodada dura.
+- **Regras escritas no repositório encurtam o pedido.** Um ADR com as regras e o quadro de rodadas substitui um prompt de 12 itens.
+- **Agrupar tarefas pequenas** corta despachos e revisões sem perder rastreio, porque o commit continua sendo por tarefa.
+
+## O que vem a seguir
+
+Os testes estão verdes, a revisão final aprovou e o `tasks.md` está quase todo marcado. Mas teste verde diz que o **código faz o que o teste pede**, não que a **tela funciona** quando você abre o navegador e clica. E a IA de verdade ainda não foi chamada: os testes usam um dublê. No [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/11-validacao-e-dividas/) vamos fazer o que nenhum teste faz: seguir o roteiro manual com o Gemini real.

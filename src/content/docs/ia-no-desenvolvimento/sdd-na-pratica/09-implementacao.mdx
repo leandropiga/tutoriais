@@ -55,7 +55,7 @@ Não é um comando com `/`. É uma mensagem comum, e o Superpowers reconhece o p
 - **O plano é o `tasks.md`.** Sem regenerar nem criar outro plano: o formato nativo do Superpowers é outro, e sem essa regra ele tenderia a criar um plano próprio.
 - **A spec é a autoridade.** É assim que a v7 resolve conflitos sozinha.
 - **Parar antes de merge, push ou qualquer coisa fora do worktree.**
-- **Listar os Rulings no fim**, porque o ledger fica fora do Git e é apagado quando a rodada termina bem.
+- **Listar e salvar os Rulings no fim**, em `docs/rulings.md`, porque o ledger fica fora do Git e é apagado quando a rodada termina bem.
 - **Dizer o que o agente não pode fazer**, e não só o que ele deve fazer (regra 12).
 
 ```text
@@ -87,7 +87,8 @@ Regras:
    não vão para o Git. GEMINI_API_KEY pode ser um valor fictício: nenhum teste chama a API real.
 10. Pare e me pergunte antes de: merge na main, push, ou qualquer ação fora do worktree.
 11. Ao terminar a rodada: rode as suítes de teste completas do backend e do frontend e mostre a
-    saída, e liste todos os Rulings do ledger para eu revisar.
+    saída, liste todos os Rulings do ledger para eu revisar e salve-os em docs/rulings.md, numa
+    seção desta rodada, com um commit no worktree.
 12. Os subagentes nunca encerram processos pelo nome (como taskkill /IM node.exe ou killall
     node): param só o processo que eles mesmos iniciaram. E não usam git stash, porque a pilha
     de stash é compartilhada entre o checkout principal e os worktrees.
@@ -213,7 +214,7 @@ Ela é uma tag intermediária, para você poder voltar ao fim da primeira rodada
 
 - Uma pasta `.worktrees/` (ignorada pelo Git) e uma branch por rodada.
 - Um commit por tarefa, com `[X]` no `tasks.md`.
-- Uma lista de Rulings na conversa, no fim da rodada.
+- Uma lista de Rulings na conversa, no fim da rodada, e a mesma lista salva em `docs/rulings.md`.
 - Suítes verdes ao fim, na branch e de novo na `main` depois do merge.
 - A tag `fase-5a-rodada-1` no remoto, no merge da rodada 1.
 
@@ -250,4 +251,4 @@ Eu usei a terceira porque quis ver o que a revisão por tarefa pega. Se o seu pr
 
 ## O que vem a seguir
 
-A primeira rodada está na `main`, com testes verdes e Rulings lidos. Mas, se um código "pronto" ainda passou pela revisão final com problemas, **o que as próximas rodadas vão esconder?** E quem lê tudo isso, os Rulings, as revisões, os resultados? No [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/10-revisao-em-camadas-e-rulings/) seguimos com as demais rodadas e vemos o que cada camada de revisão consegue pegar.
+A primeira rodada está na `main`, com testes verdes e Rulings lidos. Mas, se um código "pronto" ainda passou pela revisão final com problemas, **o que as próximas rodadas vão esconder?** E quem lê tudo isso, os Rulings, as revisões, os resultados? No [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/10-revisao-em-camadas/) seguimos com as demais rodadas e vemos o que cada camada de revisão consegue pegar.
