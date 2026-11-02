@@ -1,5 +1,5 @@
 ---
-title: "06. O momento 'não tinha pensado nisso'"
+title: 06. Clarificação
 description: O /speckit-clarify faz até cinco perguntas sobre a sua própria spec. Uma delas eu nem tinha pensado, e é por isso que essa etapa existe.
 ---
 
@@ -16,7 +16,7 @@ Toda dúvida que sobra na spec vira um **chute do agente** mais adiante. E chute
 
 Repare no que isso faz com uma resposta errada: ela vira requisito, depois vira teste, depois vira código. **Corrigir aqui custa uma letra. Corrigir depois custa um dia.**
 
-Eu cheguei a esta etapa achando que tinha pensado em tudo. Eu tinha três lacunas na cabeça (as que deixei de propósito) e imaginava que o comando ia perguntar essas três. Ele perguntou cinco. **Uma eu realmente não tinha pensado** (o bloqueio do login), e outra eu tinha deixado em aberto sem saber que ia aparecer.
+Mesmo quem acha que pensou em tudo costuma ser surpreendido aqui. É para isso que essa etapa existe.
 
 ## Passo a passo
 
@@ -28,19 +28,27 @@ Sem texto nenhum, só o comando:
 /speckit-clarify
 ```
 
-Por baixo dos panos, o agente roda um script para achar a spec ativa:
+**O que o comando faz**
 
-```powershell
-.specify/scripts/powershell/check-prerequisites.ps1 -Json -PathsOnly
-```
+O `/speckit-clarify` não cria arquivo novo: ele trabalha só no `spec.md` da funcionalidade atual. Quando você roda o comando, o agente:
 
-Ele lê o `.specify/feature.json` (criado pelo specify) e devolve o caminho da spec. Curiosidade: a saída mostra `"BRANCH": "001-gestao-contratos-clientes"`, mas continuei na `main`. O Spec Kit usa o nome da funcionalidade como "branch" mesmo quando não há branch de verdade.
+1. **Acha a spec** pelo `.specify/feature.json`, criado no capítulo anterior.
+2. **Lê a constituição**, para não perguntar o que ela já decidiu.
+3. **Varre a spec por categorias**: escopo, modelo de dados, fluxos de tela, segurança, falhas de integração, casos extremos, entre outras. Em cada uma, avalia se está clara, incompleta ou ausente.
+4. **Escolhe até cinco perguntas**, as de maior impacto, e faz **uma de cada vez**.
+5. **Grava cada resposta logo depois de aceita**, no `spec.md`. O passo 4 deste capítulo mostra onde.
 
 ### 2. Responder às perguntas
 
-O agente varre a spec por categorias (modelo de dados, segurança, falhas de integração, UX...), escolhe as cinco dúvidas de maior impacto e pergunta uma por vez. Cada pergunta vem com uma **recomendação** e uma tabela de opções. Você responde com uma letra.
+Cada pergunta vem com o motivo de ela importar, uma **recomendação** do agente e uma tabela de opções. Você pode responder de três jeitos:
 
-Estas foram as minhas:
+- com a **letra** da opção (`A`, `B`, `C`…);
+- com **"sim"** ou **"recomendado"**, para aceitar a recomendação;
+- com uma **resposta curta sua**, de até cinco palavras, quando nenhuma opção serve.
+
+Se achar que já basta, diga **"pronto"** e ele para antes da quinta pergunta.
+
+No meu caso, foram estas:
 
 | # | Pergunta | Recomendação do agente | Minha resposta |
 |---|---|---|---|
@@ -52,25 +60,33 @@ Estas foram as minhas:
 
 Minhas respostas, em ordem: **A, C, A, A, A.**
 
-As perguntas 1, 2 e 3 são as lacunas que eu tinha deixado de propósito. As perguntas **4 e 5 o agente achou sozinho**: uma de modelo de dados (o que acontece com os contratos de um cliente excluído?) e uma de segurança (o que fazer quando alguém erra a senha várias vezes?). Sendo preciso: a pergunta 4 já estava na minha lista de dúvidas em aberto da visão do produto, e o `/speckit-specify` até a tinha marcado como `[NEEDS CLARIFICATION]` (FR-010), mas não estava no meu roteiro de respostas. A pergunta 5, a do bloqueio de login, **essa eu realmente não tinha pensado**: eu tinha escrito 34 requisitos e nenhum falava de tentativas repetidas.
+De onde veio cada pergunta:
+
+- **1, 2 e 3** são as lacunas deixadas de propósito no texto da spec.
+- **4** (excluir cliente com contratos) é uma dúvida de modelo de dados. Ela já estava nas perguntas em aberto da visão do produto, e o `/speckit-specify` a tinha marcado no FR-010, mas eu não tinha planejado uma resposta.
+- **5** (várias senhas erradas) é uma dúvida de segurança, e **essa eu realmente não tinha pensado**. A spec tinha 34 requisitos, e nenhum falava de tentativas repetidas de login.
 
 Repare também que nas perguntas 2 e 3 eu **discordei da recomendação** do agente. A recomendação é um bom ponto de partida, não uma ordem. Quem decide é você.
 
 ### 3. A cena dos 100 MB
 
 :::caution[⚠️ Erro encenado]
-O limite de 100 MB é **de propósito**. O Gemini aceita no máximo 50 MB por PDF, e eu não conto isso ao agente, porque quero ver o SDD resolver o conflito. Num projeto real, você conferiria os limites da API antes de responder.
+O limite de 100 MB é um **erro de propósito, para fins de estudo**. O Gemini aceita no máximo 50 MB por PDF, e o agente não é avisado disso.
+
+A ideia é observar como os frameworks se comportam quando uma decisão errada entra na spec: em que etapa o conflito aparece, quem o percebe e como ele é resolvido. Num projeto real, você conferiria os limites da API antes de responder.
 :::
 
-Na pergunta 2, minha primeira resposta foi **A** (10 MB), a recomendação do agente. Só que o meu roteiro pedia 100 MB, e essa decisão estava registrada no `CLAUDE.md` e num ADR. O agente **parou e pediu confirmação** antes de gravar: "com 10 MB, a cena do bug encenado deixa de existir; vale A ou C?". Eu respondi **C**, e os 100 MB entraram na spec.
+**Na pergunta sobre o tamanho do PDF, responda 100 MB**, mesmo que a recomendação do agente seja outra. Se a opção de 100 MB não aparecer, responda com uma resposta curta: `100 MB`.
 
-Moral: decisões escritas protegem você até de você mesmo. Sem o ADR, o agente teria gravado 10 MB sem pestanejar, e estaria certo do ponto de vista técnico.
+O limite de 100 MB já está registrado no ADR que você criou no capítulo 03, e o agente lê os ADRs. Por isso, se você escolher outro valor por engano, ele pode parar e pedir confirmação. Nesse caso, confirme os 100 MB para manter o erro encenado.
+
+Repare que isso já é uma decisão escrita protegendo o projeto: sem o ADR, o agente gravaria o valor que você respondeu, sem questionar.
 
 ### 4. O que mudou na spec
 
-Cada resposta foi gravada logo depois de aceita, em dois lugares.
+Cada resposta é gravada logo depois de aceita, em dois lugares.
 
-1. Numa seção nova, `## Clarifications`, com o histórico:
+1. Numa seção nova, `## Clarifications`, logo depois da visão geral da spec, com o histórico:
 
    ```markdown
    ### Session 2026-10-14
@@ -78,7 +94,7 @@ Cada resposta foi gravada logo depois de aceita, em dois lugares.
    - Q: Qual é o tamanho máximo permitido para o arquivo PDF de um contrato? → A: 100 MB.
    ```
 
-2. Nas partes da spec afetadas pela resposta:
+2. Nas partes da spec afetadas pela resposta. No meu caso:
 
    | Resposta | Onde entrou |
    |---|---|
@@ -90,7 +106,7 @@ Cada resposta foi gravada logo depois de aceita, em dois lugares.
 
 O checklist de qualidade foi de 15/16 para **16/16**: não sobrou nenhum `[NEEDS CLARIFICATION]`.
 
-Duas dúvidas ficaram de fora por baixo impacto: como criar o primeiro usuário (já estava nas Premissas) e se CPF e RG devem ser mascarados nas listagens (LGPD). Nenhuma impedia o plano.
+No meu caso, duas dúvidas ficaram de fora por baixo impacto: como criar o primeiro usuário (já estava nas Premissas) e se CPF e RG devem ser mascarados nas listagens (LGPD). Nenhuma impedia o plano.
 
 ### 5. Feche a fase com uma tag
 
@@ -104,7 +120,7 @@ git push origin fase-2-especificacao
 ## O que esperar
 
 - Cinco perguntas (ou menos), uma por vez, cada uma com recomendação e opções.
-- Uma seção `## Clarifications` no topo do `spec.md`, com data e as perguntas e respostas.
+- Uma seção `## Clarifications` no `spec.md`, logo depois da visão geral, com data e as perguntas e respostas.
 - Requisitos e histórias ajustados conforme as respostas.
 - Checklist de qualidade completo e zero marcadores `[NEEDS CLARIFICATION]`.
 - A tag `fase-2-especificacao` no remoto.
@@ -132,4 +148,4 @@ Vale a pena parar um minuto aqui: no vibe coding, essas cinco perguntas teriam s
 
 ## O que vem a seguir
 
-A spec agora diz: **PDF de até 100 MB.** Parece razoável, e eu mesmo escolhi. Mas eu sei uma coisa que o agente não sabe: o serviço de IA que vai analisar esse PDF aceita só 50 MB. O que acontece quando o próximo comando, o `/speckit-plan`, olhar para esse número? Descubra no [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/07-o-plano-que-pegou-o-bug/).
+Se você seguiu o roteiro, a spec agora diz: **PDF de até 100 MB.** Parece razoável, e foi você quem escolheu. Mas eu sei uma coisa que o agente não sabe: o serviço de IA que vai analisar esse PDF aceita só 50 MB. O que acontece quando o próximo comando, o `/speckit-plan`, olhar para esse número? Descubra no [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/07-o-plano-que-pegou-o-bug/).
