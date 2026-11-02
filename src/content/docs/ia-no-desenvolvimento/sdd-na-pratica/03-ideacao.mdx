@@ -5,16 +5,10 @@ description: Como transformar uma ideia solta em uma visão de produto, e por qu
 
 ## Onde estamos
 
-Terceiro capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/02-dois-frameworks-uma-escolha/) instalamos o Spec Kit e o Superpowers e criamos o repositório. Se você chegou direto aqui, o que importa é: tem um repositório com `CLAUDE.md`, `.specify/` e `docs/`, e as ferramentas instaladas.
+No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/02-dois-frameworks-uma-escolha/) instalamos o Spec Kit e o Superpowers e criamos o repositório. Se você chegou direto aqui, o que importa é: tem um repositório com `CLAUDE.md`, `.specify/` e `docs/`, e as ferramentas instaladas.
 
-**Ponto de partida:** o commit `9672266` (setup do laboratório e conexão com o GitHub, ainda sem o Spec Kit; no laboratório a instalação veio depois da ideação, veja a nota no capítulo 02).
+**Ponto de partida:** o seu projeto ao fim do capítulo 02, com as ferramentas instaladas e o repositório criado.
 **Tag de chegada:** `fase-1-ideacao`.
-
-```bash
-git clone https://github.com/leandropiga/arkhos.labs.sdd.contract.git
-cd arkhos.labs.sdd.contract
-git checkout 9672266
-```
 
 ## O que vamos fazer e por quê
 
@@ -22,13 +16,11 @@ Antes de abrir o Spec Kit, vamos parar e pensar: **o que** vamos construir? Na *
 
 Esse texto não é a spec. É o "papo de corredor" organizado, que depois alimenta o `/speckit-specify`. Em vibe coding, ele costuma ficar só na sua cabeça, e é por isso que o agente chuta o que você não disse.
 
-Uma coisa que eu aprendi cedo e que serve para você: **eu parti de um guia gerado por IA**. Ele tinha comandos desatualizados e um "bug" que não se sustentava. Se eu tivesse copiado sem conferir, travava logo no `specify init`. Trate texto de IA como rascunho de um colega júnior: ótimo ponto de partida, mas confira as fontes.
-
 ## Passo a passo
 
-### 1. Confira as versões antes de confiar em qualquer instrução
+### 1. Confira as versões das ferramentas
 
-Se você tem um guia (seu, de IA, de internet), confira os comandos com a fonte oficial. Foi o que eu fiz com o meu:
+Ferramentas de IA mudam rápido. Antes de seguir, veja se as versões que você tem são as mesmas do tutorial (ou mais novas) e se os comandos ainda valem:
 
 ```bash
 gh api repos/github/spec-kit/releases/latest --jq '.tag_name + " " + .published_at'
@@ -41,20 +33,7 @@ npm view @google/genai version
 # 2.29.1
 ```
 
-A comparação desse guia com a documentação oficial deu esta lista (a IA tinha errado ou desatualizado cada linha marcada):
-
-| O guia dizia | Situação | O que fiz |
-|---|---|---|
-| `uv tool install specify-cli --from git+...` | desatualizado | `uv tool install specify-cli` |
-| `specify init ... --ai claude` | desatualizado | `--integration claude` |
-| comandos `/speckit-constitution`, `/speckit-specify`... | certo | nada |
-| fluxo constitution, specify, clarify, plan, tasks | incompleto | existem também `checklist`, `analyze` e `converge` |
-| `/speckit-bug-assess` | existe, mas é extensão | `specify extension add bug` |
-| modelo `gemini-2.5-flash` | legado | `gemini-3.8-flash` |
-| `response.text()` | errado | `response.text` |
-| `version: '3.8'` no compose | obsoleto | remover |
-
-Anote correções assim num ADR: elas explicam por que o seu projeto usa um comando diferente do que você encontra por aí.
+Os comentários mostram o que apareceu quando conferi. Se a sua saída for uma versão mais nova, siga em frente. Se algum comando do tutorial falhar, confira o README da ferramenta e registre a diferença num ADR.
 
 ### 2. Converse com o Claude sobre a ideia
 
@@ -197,10 +176,10 @@ Para retomar do meu ponto: `git checkout fase-1-ideacao`.
 
 ## O que isso mostrou
 
-- **Especificação ruim gera código ruim.** Isso vale também para o guia que você usa para aprender.
-- **IA com pesquisa erra e a internet muda rápido.** Eu só achei as divergências porque comparei o guia com a fonte oficial.
+- **Especificação ruim gera código ruim.** Por isso a visão do produto vem antes de qualquer spec: o que não estiver escrito aqui, o agente vai chutar depois.
+- **IA com pesquisa erra e a internet muda rápido.** Comandos e versões que a IA afirma valem uma conferência na fonte oficial antes de você aceitar.
 - **Para provocar um erro de propósito, é preciso entender o sistema tão bem quanto para evitá-lo.** Eu quase errei a cena do "bug encenado": a pesquisa inicial dizia que o limite de 50 MB valia só para envio direto, e que trocar para a File API do Gemini resolveria. Lendo com mais calma, o limite vale para **qualquer** forma de envio. Redesenhei a cena: a causa raiz deixou de ser "inline contra File API" e virou "a spec contradiz um limite do fornecedor", que é um aprendizado de SDD mais útil.
-- **Decisões que contrariam o guia ficam no `CLAUDE.md`.** Assim o agente não volta para a versão antiga sem perceber.
+- **Decisões que contrariam o que o agente "sabe" ficam no `CLAUDE.md`.** Comando novo, modelo novo, versão nova: registrados ali, o agente não volta para a versão antiga sem perceber.
 
 ## Gancho
 
