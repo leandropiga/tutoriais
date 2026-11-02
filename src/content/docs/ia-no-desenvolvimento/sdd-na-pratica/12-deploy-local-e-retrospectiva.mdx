@@ -1,33 +1,66 @@
 ---
 title: 12. Deploy local e retrospectiva
-description: "Deixar a aplicação rodando inteira na sua máquina, provar com um clone limpo e olhar para trás com honestidade: o que funcionou, o que não funcionou e o que eu faria diferente."
+description: "Deixar a aplicação rodando inteira na sua máquina, provar com um clone limpo e olhar para trás com honestidade: o que funcionou, o que não funcionou e o que você faria diferente."
 ---
 
 ## Onde estamos
 
-Este é o último capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/11-validacao-e-dividas/) a validação manual passou e as cinco dívidas de produção fecharam.
+Este é o último capítulo do fluxo principal. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/11-validacao-e-dividas/) a validação manual passou e a rodada das dívidas foi mergeada.
 
-**Ponto de partida:** o seu projeto ao fim do capítulo 11, com a rodada 7 mergeada.
+**Ponto de partida:** o seu projeto ao fim do capítulo 11, com a rodada das dívidas mergeada na `main`.
 **Tag de chegada:** `fase-8-retrospectiva`. A tag `fase-7-deploy` marca o fim do deploy local, antes da retrospectiva.
 
 ## O que vamos fazer e por quê
 
-1. **Deploy.** Aqui, "deploy" significa **rodar a aplicação completa localmente**, como decidi lá no capítulo 03. Antes de executar, perguntei de novo se eu queria mudar de ideia e publicar em nuvem. Mantive local. Vale reabrir uma decisão antiga quando chega a hora de executá-la: o ADR foi escrito antes de existir código, e perguntar de novo custa um minuto.
-2. **Retrospectiva.** Olhar para trás, para as etapas e decisões do projeto, e responder: o que funcionou, o que não funcionou e o que eu faria diferente. Tudo sai dos ADRs e do Git. Onde eu estou opinando, eu digo.
+1. **Deploy.** Aqui, "deploy" significa **rodar a aplicação completa localmente**, como ficou decidido no ADR do capítulo 03. Antes de executar, vale reabrir essa decisão: o ADR foi escrito antes de existir código, e perguntar de novo custa um minuto.
+2. **Retrospectiva.** Olhar para trás, para as etapas e decisões do projeto, e responder: o que funcionou, o que não funcionou e o que você faria diferente. Tudo sai dos ADRs, do `docs/rulings.md` e do Git.
 
 ## Passo a passo
 
-### 1. Trate o risco que a divisão do bundle criou (T084)
+### 1. Reabra a decisão do deploy
 
-Na rodada 7 dividi o frontend em pedaços que carregam sob demanda. Isso trouxe uma falha nova: se um pedaço não carregar (a rede caiu, ou o app foi atualizado e o nome do arquivo mudou), a tela ficava em branco, sem explicação.
+Releia o ADR do deploy local, em `docs/decisoes/`, e pergunte: agora que o código existe, essa decisão ainda vale?
 
-Criei um `ErroBoundary` (`frontend/src/components/erro-boundary.tsx`), uma classe React em volta do `Suspense` das rotas. Se uma tela falhar ao carregar, aparece uma mensagem em português e o botão **"Recarregar a página"**. O teste usa um `lazy` cujo import dá erro e confere a mensagem e o clique no botão.
+- **Se vale,** siga com o deploy local, como neste capítulo.
+- **Se quer publicar em nuvem,** trate isso como um novo ciclo de SDD (spec do que muda, plano, tarefas, análise) e registre a mudança num ADR novo. Este capítulo não cobre a nuvem, mas o passo 4 lista os pontos de atenção.
 
-Cada otimização cria um modo de falha novo. A resposta é tratá-lo, não esconder.
+No meu caso, mantive o deploy local.
 
-### 2. Prove que roda na máquina de outra pessoa (T085)
+### 2. Planeje o deploy local
 
-"Roda na minha máquina" não prova nada. O teste de verdade é começar do zero: clonar numa pasta limpa, sem nenhum arquivo seu, e fazer tudo do início.
+O deploy também vira tarefas, com escopo explícito, como as rodadas. Cole no Claude Code:
+
+```text
+Crie uma fase nova no fim do tasks.md, "Deploy local", com IDs novos, na sequência das tarefas
+existentes, e com estas tarefas:
+
+1. Se o frontend carrega telas sob demanda (React.lazy), um ErrorBoundary em volta das rotas:
+   se uma tela falhar ao carregar, mostrar uma mensagem em português e um botão "Recarregar a
+   página". Com teste.
+2. Provar que o projeto sobe do zero: clonar o repositório numa pasta limpa, instalar as
+   dependências, rodar as suítes e o build, e corrigir o README e o quickstart se faltar algum
+   passo.
+3. Uma seção "Onde publicar" no README.md, com sugestões de onde publicar e os pontos de
+   atenção, sem passo a passo e deixando claro o que não foi testado.
+
+Atualize o quadro de rodadas do ADR de implementação por rodadas com esta rodada.
+```
+
+Depois, peça a rodada como no capítulo 10, seguindo o ADR. Os passos 3 a 5 mostram o que conferir em cada tarefa.
+
+### 3. Confira o ErrorBoundary
+
+Se o seu frontend foi dividido em pedaços que carregam sob demanda (no capítulo 11, na rodada das dívidas), existe uma falha nova: se um pedaço não carregar (a rede caiu, ou o app foi atualizado e o nome do arquivo mudou), a tela fica em branco, sem explicação.
+
+Confira se o agente criou o `ErrorBoundary` em volta das rotas, com um teste que simula a falha do carregamento e confere a mensagem e o botão.
+
+No meu caso, foi um `ErroBoundary` (`frontend/src/components/erro-boundary.tsx`), uma classe React em volta do `Suspense` das rotas. O teste usa um `lazy` cujo import dá erro e confere a mensagem e o clique no botão "Recarregar a página".
+
+Cada otimização cria um modo de falha novo. A resposta é tratá-lo, não escondê-lo.
+
+### 4. Prove que roda na máquina de outra pessoa
+
+"Roda na minha máquina" não prova nada. O teste de verdade é começar do zero: clonar numa pasta limpa, sem nenhum arquivo seu, e fazer tudo do início. Mesmo que o agente já tenha feito isso na rodada, faça você também:
 
 ```bash
 # fora da pasta do projeto; use o nome que você deu ao repositório no capítulo 02
@@ -38,7 +71,7 @@ cp backend/.env.test.example backend/.env.test
 (cd frontend && npm ci && npx vitest run && npm run build)
 ```
 
-O `.env.test` não vai para o Git. Quem clonar precisa copiar do exemplo antes de rodar os testes do backend, e é por isso que o README e o quickstart dizem isso.
+Os arquivos `.env` não vão para o Git: quem clonar precisa copiá-los dos exemplos antes de rodar os testes. Confira quais exemplos o **seu** projeto tem e se o README e o quickstart dizem para copiá-los.
 
 No meu caso:
 
@@ -49,11 +82,11 @@ No meu caso:
 | Testes do frontend | 15 arquivos, 78 testes passando |
 | `npm run build` | ok, sem aviso de chunk grande |
 
-Clone limpo pega arquivo esquecido e dependência que só existia por acaso. O roteiro manual de 14 passos você já fez no capítulo anterior.
+Clone limpo pega arquivo esquecido e dependência que só existia por acaso. O roteiro de validação na tela você já fez no capítulo 11.
 
-### 3. Escreva "Onde publicar", sem prometer o que não testou (T086)
+### 5. Confira a seção "Onde publicar"
 
-Acrescentei ao `README.md` uma seção de **sugestões** de onde publicar: Render, Railway e VPS com Docker Compose. **Sem passo a passo**, e com os pontos de atenção que eu não testei:
+Leia a seção nova do `README.md`. Ela deve trazer **sugestões** de onde publicar, **sem passo a passo**, e os pontos de atenção que ninguém testou. Confira se pelo menos estes aparecem:
 
 - variáveis de ambiente no servidor, e nunca a chave do Gemini no frontend;
 - cookies e CORS em domínio real, com HTTPS;
@@ -61,9 +94,41 @@ Acrescentei ao `README.md` uma seção de **sugestões** de onde publicar: Rende
 - migrações a cada publicação (`npx prisma migrate deploy`), e o seed só na primeira;
 - a instabilidade ocasional do Gemini.
 
-Um deploy local também é uma decisão. Prefiro terminar com o app rodando e um mapa honesto do que falta para publicar a fingir que nuvem é trivial.
+No meu caso, as sugestões foram Render, Railway e VPS com Docker Compose.
 
-### 4. A retrospectiva
+Um deploy local também é uma decisão. É melhor terminar com o app rodando e um mapa honesto do que falta para publicar do que fingir que nuvem é trivial.
+
+### 6. Feche o deploy com uma tag
+
+Com a rodada do deploy mergeada na `main` e o clone limpo verde:
+
+```bash
+git push origin main
+git tag -a fase-7-deploy -m "Fase 7 - Deploy local concluido"
+git push origin fase-7-deploy
+```
+
+### 7. Faça a sua retrospectiva
+
+Antes de ler a minha, escreva a sua. Comece pelos números, que o agente junta para você:
+
+```text
+Monte os números do projeto a partir do Git, dos ADRs em docs/decisoes/, do tasks.md e do
+docs/rulings.md: quantidade de ADRs, tarefas, rodadas, commits, Rulings, linhas de código da
+aplicação e de teste, e testes automáticos no backend e no frontend.
+```
+
+Depois, responda às três perguntas, com exemplos do **seu** projeto:
+
+1. **O que funcionou?** Que etapa achou algo que você teria descoberto só no código?
+2. **O que não funcionou, ou funcionou pela metade?** Onde o processo pesou mais do que ajudou? Que ferramenta ficou sem uso?
+3. **O que você faria diferente?** Se começasse outro projeto amanhã, o que cortaria e o que adiantaria?
+
+Separe o que é fato (está no Git, nos ADRs, nos Rulings) do que é opinião sua, e diga qual é qual. Salve tudo em `docs/retrospectiva.md`.
+
+### 8. Compare com a minha retrospectiva
+
+Esta é a minha, do laboratório. Leia depois de escrever a sua, e compare.
 
 **O laboratório em números:**
 
@@ -81,7 +146,7 @@ A proporção chama a atenção: quase uma linha de teste para cada linha de có
 
 **O que funcionou:**
 
-1. **Gastar tempo nos documentos antes do código.** O `/speckit-analyze` achou uma falha de segurança e uma violação da constituição antes de existir código. O `/speckit-plan` descobriu o limite de 50 MB do Gemini. O `/speckit-clarify` fez duas perguntas que eu nem tinha no roteiro. *Errar num documento custa uma linha; errar em produção custa um dia.*
+1. **Gastar tempo nos documentos antes do código.** O `/speckit-analyze` achou uma falha de segurança e uma violação da constituição antes de existir código. O `/speckit-plan` levantou o conflito dos 50 MB do Gemini. O `/speckit-clarify` fez duas perguntas que eu nem tinha no roteiro. *Errar num documento custa uma linha; errar em produção custa um dia.*
 2. **Constituição com regras que dá para testar.** "Apagar o arquivo temporário inclusive em caso de erro" virou teste automático, e o passo 14 do roteiro manual conferiu na prática. Regra vaga não vira trava.
 3. **Tarefas por história, não por camada.** Cada rodada terminava com algo que dava para abrir e usar.
 4. **Revisão em duas camadas.** A de tarefa pega defeito local; a final da branch pega o que só se vê no conjunto (o furo de concorrência no bloqueio de login, as mensagens duplicadas, o `EXDEV` combinado com o `PUT`).
@@ -90,7 +155,7 @@ A proporção chama a atenção: quase uma linha de teste para cada linha de có
 
 **O que não funcionou (ou funcionou pela metade):**
 
-1. **A extensão `bug` do Spec Kit ficou sem uso.** Eu tinha dito que bugs reais passariam pelo fluxo `/speckit-bug-assess`, `-fix` e `-test`. Na prática, **nenhum** dos bugs da implementação passou por ele: foram achados e resolvidos dentro do ciclo de revisão do Superpowers (revisor, correção, re-revisão). Há duas leituras honestas: ou o ciclo do Superpowers já cobre o mesmo terreno e o `bug` é redundante dentro de uma rodada, ou o `bug` serviria para defeitos achados **depois** da rodada (como o 503 do Gemini) e eu simplesmente não tive nenhum desses. Minha opinião é a segunda, mas **não testei**. Não prometo esse fluxo como se tivesse sido exercitado.
+1. **A extensão `bug` do Spec Kit ficou sem uso.** Eu tinha planejado que bugs reais passariam pelo fluxo `/speckit-bug-assess`, `-fix` e `-test` (veja o [capítulo 13](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/13-extras-extensoes-plugins-e-skills/)). Na prática, **nenhum** dos bugs da implementação passou por ele: foram achados e resolvidos dentro do ciclo de revisão do Superpowers (revisor, correção, re-revisão). Há duas leituras honestas: ou o ciclo do Superpowers já cobre o mesmo terreno e o `bug` é redundante dentro de uma rodada, ou o `bug` serviria para defeitos achados **depois** da rodada (como o 503 do Gemini) e eu simplesmente não tive nenhum desses. Minha opinião é a segunda, mas **não testei**. Não prometo esse fluxo como se tivesse sido exercitado.
 2. **Os scripts do Superpowers esperam um formato de plano que o Spec Kit não gera.** O `task-brief` procura títulos "Task N" e o meu `tasks.md` usa `T001`. Em duas rodadas escrevi os pedidos à mão. Funciona, mas é um atrito de juntar as duas ferramentas.
 3. **Subagentes precisam de cerca.** Um com acesso ao terminal fez estrago fora do projeto; outro usou `git stash` num worktree compartilhado. A lição foi a mesma duas vezes: diga o que o agente **não** pode fazer.
 4. **O processo é pesado para o tamanho do problema.** Para uma aplicação de um usuário só, a cerimônia é grande: 11 ADRs, 7 rodadas, revisões em camadas. Faz sentido **porque o objetivo era estudar o processo**. Num projeto real e pequeno, eu cortaria: menos rodadas, uma revisão final só, ADRs só para divergências de verdade. Isso é opinião minha.
@@ -115,26 +180,33 @@ A proporção chama a atenção: quase uma linha de teste para cada linha de có
 6. **Conte os tropeços.**
 7. **Seja claro sobre o que ficou de fora**: nuvem, acessibilidade, o fluxo `bug`, as dívidas.
 
-### 5. Feche o ciclo
+### 9. Feche o ciclo
+
+Commite a sua retrospectiva e marque o fim do projeto:
 
 ```bash
-git tag -a fase-7-deploy -m "Fase 7 - Deploy local concluido"
+git add docs/retrospectiva.md
+git commit -m "docs: retrospectiva do projeto"
+git push origin main
 git tag -a fase-8-retrospectiva -m "Fase 8 - Retrospectiva"
-git push origin fase-7-deploy fase-8-retrospectiva
+git push origin fase-8-retrospectiva
 ```
 
 ## O que esperar
 
 - A aplicação rodando inteira na sua máquina: banco em Docker, backend em `http://localhost:3000`, frontend em `http://localhost:5173`.
+- Uma fase "Deploy local" no `tasks.md`, toda marcada `[X]`.
 - Um clone limpo com testes verdes e build sem aviso.
-- Um `README.md` com a seção "Onde publicar" e a lista do que você **não** testou.
-- A sua própria retrospectiva. Escreva-a antes de ler a minha de novo.
+- Um `README.md` com a seção "Onde publicar" e a lista do que **não** foi testado.
+- A sua retrospectiva em `docs/retrospectiva.md`.
+- As tags `fase-7-deploy` e `fase-8-retrospectiva` no remoto, em commits diferentes.
 
 ## Divergências comuns
 
 - **O clone limpo falhou.** Ótimo: foi para isso que você o fez. Quase sempre é um arquivo local que não está no Git (`.env.test`, `.env`) ou uma dependência que só existia na sua máquina. Corrija e documente.
+- **O seu frontend não foi dividido em pedaços.** Então o `ErrorBoundary` da fase de deploy não é obrigatório. Ainda assim, vale ter um para erros de renderização.
 - **Seus números são outros** (testes, linhas, commits). Esperado. Eles dependem do que o seu agente escreveu. Compare a estrutura, não os totais.
-- **Você quer publicar em nuvem.** O laboratório não validou isso. Comece pela lista de pontos de atenção acima, e trate o que você descobrir como um novo ciclo de SDD: spec do que muda, plano, tarefas, análise.
+- **Você quer publicar em nuvem.** O laboratório não validou isso. Comece pela lista de pontos de atenção do passo 5, e trate o que você descobrir como um novo ciclo de SDD: spec do que muda, plano, tarefas, análise.
 - **A sua retrospectiva concluiu o contrário da minha** (por exemplo, que o fluxo `bug` vale a pena, ou que SDD é pesado demais). Não tem certo ou errado. Escreva por quê.
 
 **Para comparar com o laboratório:** tags [`fase-7-deploy`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-7-deploy) e [`fase-8-retrospectiva`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-8-retrospectiva).
@@ -143,9 +215,10 @@ git push origin fase-7-deploy fase-8-retrospectiva
 
 - **"Roda na minha máquina" não prova nada.** Clone limpo prova mais.
 - **Cada otimização cria um modo de falha novo.**
+- **Reabra uma decisão antiga quando chega a hora de executá-la.** Ela foi tomada antes de existir código.
 - **Os melhores achados do processo vieram dos documentos e da revisão final, não do código.** A frase que resume: errar num documento custa uma linha; errar em produção custa um dia.
 - **O processo é uma ferramenta, não uma religião.** Pesado demais para um app pequeno? Corte. O importante é você saber o que cada etapa evita.
-- **Eu só prometo o que exercitei.** O fluxo `bug`, a nuvem e a acessibilidade ficaram de fora, e eu digo isso.
+- **Prometa só o que foi exercitado.** O que ficou de fora (a nuvem, a acessibilidade, o fluxo `bug`) deve ser dito.
 
 ## O que vem a seguir
 
