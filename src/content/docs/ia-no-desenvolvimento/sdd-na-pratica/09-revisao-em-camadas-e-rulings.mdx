@@ -142,7 +142,7 @@ Para conferir: rode a suíte dos dois pacotes (`npx vitest run`) e `npx tsc --no
 cd frontend && npm run build && grep -ri GEMINI dist   # deve voltar vazio
 ```
 
-## Se o seu deu diferente
+## Divergências comuns
 
 - **Os seus achados são outros, ou a revisão final não achou nada.** Esperado: o código gerado varia. O que importa é manter as duas camadas de revisão e **ler** a revisão final. Se ela voltar vazia sempre, desconfie do prompt do revisor.
 - **O limite de uso da API derrubou o revisor no meio do trabalho.** Aconteceu comigo. O agente derrubado guarda o que fez; quando o limite liberou, disse só "pode seguir" e o agente retomou o revisor do ponto onde parou.

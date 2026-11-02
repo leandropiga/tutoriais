@@ -166,7 +166,7 @@ git push origin fase-1-ideacao
 
 Para conferir: abra a visão do produto e veja se alguém que nunca viu o projeto entende o que ele faz em dois minutos. Se precisar explicar oralmente, falta texto.
 
-## Se o seu deu diferente
+## Divergências comuns
 
 - **O Claude propôs outras decisões ou outra lista de correções.** Normal. O modelo pesquisa na hora, e a internet muda. Confira cada correção na fonte oficial antes de aceitar.
 - **O Claude fez menos (ou mais) perguntas.** Sem problema. O objetivo é fechar as decisões e deixar tudo registrado em ADR.
@@ -174,13 +174,13 @@ Para conferir: abra a visão do produto e veja se alguém que nunca viu o projet
 
 Para retomar do meu ponto: `git checkout fase-1-ideacao`.
 
-## O que isso mostrou
+## Conclusão
 
 - **Especificação ruim gera código ruim.** Por isso a visão do produto vem antes de qualquer spec: o que não estiver escrito aqui, o agente vai chutar depois.
 - **IA com pesquisa erra e a internet muda rápido.** Comandos e versões que a IA afirma valem uma conferência na fonte oficial antes de você aceitar.
 - **Para provocar um erro de propósito, é preciso entender o sistema tão bem quanto para evitá-lo.** Eu quase errei a cena do "bug encenado": a pesquisa inicial dizia que o limite de 50 MB valia só para envio direto, e que trocar para a File API do Gemini resolveria. Lendo com mais calma, o limite vale para **qualquer** forma de envio. Redesenhei a cena: a causa raiz deixou de ser "inline contra File API" e virou "a spec contradiz um limite do fornecedor", que é um aprendizado de SDD mais útil.
 - **Decisões que contrariam o que o agente "sabe" ficam no `CLAUDE.md`.** Comando novo, modelo novo, versão nova: registrados ali, o agente não volta para a versão antiga sem perceber.
 
-## Gancho
+## Próximos passos
 
 A visão do produto diz o que eu quero, mas não tem **regra nenhuma**. Não diz que testes são obrigatórios, que o arquivo temporário precisa ser apagado mesmo se der erro, nem como a senha deve ser guardada. Isso fica a cargo de cada pedido ao agente, que é exatamente o problema do vibe coding. No [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/04-constituicao-e-especificacao/) eu escrevo as regras que valem para o projeto inteiro, a **constituição**, e depois a **especificação**.
