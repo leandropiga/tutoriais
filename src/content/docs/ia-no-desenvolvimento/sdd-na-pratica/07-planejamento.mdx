@@ -1,0 +1,251 @@
+---
+title: 07. Planejamento
+description: O /speckit-plan transforma a spec em plano técnico, confere tudo contra a constituição e é a primeira etapa que pode levantar o conflito dos 100 MB.
+---
+
+## Onde estamos
+
+No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/06-clarificacao/) a clarificação fechou a spec, e você respondeu **100 MB** para o limite de PDF, sabendo que o serviço de IA aceita só 50 MB.
+
+**Ponto de partida:** o seu projeto ao fim do capítulo 06, com a spec esclarecida (tag `fase-2-especificacao`).
+**Tag de chegada:** `fase-3-planejamento`.
+
+## O que vamos fazer e por quê
+
+Vamos transformar a spec (o *quê*) num **plano técnico** (o *como*): estrutura de pastas, modelo de dados, rotas da API, versões dos pacotes e como cada regra da constituição vai ser cumprida. Ainda sem escrever código.
+
+É também a primeira etapa que olha para fora do projeto: para escolher versões e bibliotecas, o agente consulta o npm e a documentação das APIs. É aí que a spec encontra o mundo real, e onde o erro encenado dos 100 MB pode aparecer.
+
+## Passo a passo
+
+### 1. Confira o ambiente
+
+```bash
+node --version            # v24.14.0
+docker compose version    # v5.1.3
+```
+
+Os comentários mostram as versões que usei. Se as suas forem mais novas, siga em frente.
+
+### 2. Escreva o texto do plano
+
+**Como escrever o texto**
+
+O `/speckit-plan` funciona sem texto nenhum, mas aí o agente decide sozinho tudo o que a constituição e a spec não dizem. O texto serve para fechar essas lacunas técnicas. Algumas dicas:
+
+- **Não repita a constituição.** A stack e as regras de qualidade já estão lá, e o comando relê o arquivo. Escreva só o que ela não cobre: versões, ambiente, sessão, seed, testes, integrações.
+- **Peça para o plano resolver as tensões que você já conhece.** Por exemplo: a constituição manda apagar o arquivo temporário, e a spec manda guardar o PDF para download. Pedir explicitamente evita que o agente ignore um dos dois lados.
+- **Dê os detalhes que o agente costuma errar.** Uma API que mudou, um campo obsoleto, uma propriedade que parece método. Se você já sabe, escreva.
+- **Não mencione o limite de 50 MB.** A spec diz 100 MB, e o plano deve seguir a spec. Ver o que o plano faz com esse número é o objetivo do erro encenado.
+
+:::caution[⚠️ Erro encenado]
+Os 100 MB continuam sendo um **erro de propósito, para fins de estudo**. Aqui, a ideia é observar se a etapa de planejamento percebe o conflito com o limite do Gemini e como ela reage: se avisa, se corrige a spec por conta própria ou se segue em frente sem perceber. Num projeto real, você conferiria os limites da API antes.
+:::
+
+No Claude Code, digite `/speckit-plan` e cole o texto na mesma mensagem:
+
+```text
+/speckit-plan Escreva o plano e todos os artefatos em português do Brasil.
+
+A stack e as regras de qualidade estão na constituição; siga-as e preencha a verificação de
+conformidade (Constitution Check) do plano. Abaixo vão os detalhes técnicos que a constituição
+não cobre.
+
+## Ambiente
+
+- Node.js 24 LTS e npm. Docker com Docker Compose v2 ou superior: o docker-compose.yml NÃO usa
+  o campo `version`, que é obsoleto.
+- A aplicação roda somente na máquina local (sem deploy em nuvem nesta versão). Backend,
+  frontend e banco sobem com comandos documentados no quickstart.
+- Use as versões estáveis mais recentes de cada pacote, conferidas no registro do npm no momento
+  do planejamento, e registre as versões escolhidas no research.md.
+- Configuração por variáveis de ambiente, com um `.env.example` para cada pacote que precisar.
+  Nenhum segredo vai para o Git.
+
+## Backend
+
+- API REST em JSON, sob o prefixo `/api`.
+- O formato padronizado de erro (constituição, Princípio III) deve ser definido no contrato da
+  API e usado por todas as rotas, incluindo erros de validação com indicação do campo.
+- O primeiro usuário é criado por um script de seed, com usuário e senha lidos de variáveis de
+  ambiente. Senhas são guardadas apenas como hash.
+- Sessão: JWT em cookie HttpOnly (constituição), com validade de 8 horas, SameSite=Lax e Secure
+  quando não estiver em desenvolvimento.
+- O bloqueio de login após 5 erros (FR-002) precisa sobreviver a uma reinicialização do
+  servidor.
+- Arquivos dos contratos: a spec exige guardar o PDF para consulta e download (FR-024). Defina
+  onde os PDFs ficam guardados de forma permanente e deixe claro como isso convive com a regra
+  da constituição de arquivos temporários (Princípio IV), que vale para o upload e para o envio
+  à IA.
+- Gemini: no SDK @google/genai, o texto da resposta é lido pela propriedade `response.text`
+  (não é um método). A chamada ao Gemini fica isolada em um módulo próprio, para que os testes
+  usem um dublê e nunca chamem a API real.
+- O tempo-limite de 15 segundos da análise (FR-030) é aplicado no servidor; o frontend mostra o
+  toast quando recebe o erro correspondente.
+
+## Frontend
+
+- Aplicação de página única com rotas protegidas: sem sessão válida, redireciona para o login.
+- Em desenvolvimento, o frontend acessa a API pelo proxy do Vite, para que o cookie de sessão
+  funcione na mesma origem, sem configurar CORS com credenciais.
+- O shadcn/ui é inicializado com o CLI oficial (`npx shadcn@latest init`) na configuração para
+  Vite com Tailwind CSS v4. Toasts, formulários, tabelas, paginação e o gráfico da Home usam
+  componentes do shadcn/ui.
+
+## Testes
+
+- Backend: Vitest + supertest contra um banco PostgreSQL de teste separado do de
+  desenvolvimento.
+- Frontend: Vitest com React Testing Library.
+- Cada história de usuário da spec deve ter testes que cubram seus cenários de aceitação.
+```
+
+**O que o comando faz**
+
+O `/speckit-plan` cria os arquivos na mesma pasta da spec, `specs/001-gestao-contratos-clientes/`:
+
+| Arquivo | O que tem |
+|---|---|
+| `plan.md` | o plano em si: contexto técnico, estrutura de pastas, Constitution Check e riscos |
+| `research.md` | as decisões técnicas, cada uma com **decisão**, **motivo** e **alternativas descartadas** |
+| `data-model.md` | as entidades, com campos, relacionamentos e regras de validação |
+| `contracts/` | os contratos das interfaces; aqui, as rotas da API e os erros |
+| `quickstart.md` | um roteiro para subir a aplicação e validar que ela funciona de ponta a ponta |
+
+Quando você roda o comando, o agente:
+
+1. **Copia o modelo do plano** para `plan.md`, usando um script do Spec Kit.
+2. **Lê a spec e a constituição.**
+3. **Preenche o contexto técnico** (linguagem, pacotes, banco, testes) e marca o que ainda não sabe.
+4. **Faz o Constitution Check**: uma tabela que confere, princípio por princípio, se o plano obedece à constituição. Uma violação sem justificativa barra o plano.
+5. **Fase 0, pesquisa:** resolve cada dúvida do contexto técnico, consultando o npm e a documentação, e grava o resultado no `research.md`.
+6. **Fase 1, design:** gera o `data-model.md`, os `contracts/` e o `quickstart.md`.
+7. **Refaz o Constitution Check** com o design pronto e mostra um resumo dos arquivos gerados.
+
+O comando **não faz commit** e não escreve código.
+
+### 3. Leia a pesquisa
+
+Comece pelo `research.md`: é ali que aparecem as surpresas, porque é a parte que consulta o mundo fora do projeto. Leia as decisões e, principalmente, as alternativas descartadas.
+
+No meu caso, a pesquisa trouxe duas surpresas, além do limite do PDF:
+
+- **Uma armadilha no npm.** A tag `latest` do pacote `prisma` apontava para uma versão de teste:
+
+  ```bash
+  npm view prisma dist-tags --json
+  # "latest": "8.0.0-rc.22"   <- release candidate!
+  npm view @prisma/client dist-tags --json
+  # "latest": "7.10.0"
+  ```
+
+  Um `npm install prisma` ingênuo instalaria uma RC incompatível com o client. O plano fixou 7.10.0 nos dois.
+- **A documentação do Gemini tinha mudado.** Os exemplos usavam uma API nova (`ai.interactions.create`). O plano manteve `generateContent` com `response.text`, conferiu nas definições de tipo do SDK que `response.text` é uma propriedade, e registrou a API nova como alternativa.
+
+Com você, as surpresas devem ser outras: versões e documentação mudam o tempo todo. A lição que vale sempre: **quando uma versão parecer estranha, confira os `dist-tags`** antes de aceitar.
+
+### 4. Procure o aviso sobre o limite do PDF
+
+Este é o ponto de conferência do erro encenado. Procure por `50 MB` e `100 MB` no `research.md` e no `plan.md`, principalmente na lista de riscos.
+
+O esperado é que o plano **siga a spec, mas avise do conflito**: PDFs entre 50 e 100 MB seriam aceitos no cadastro e falhariam na análise.
+
+No meu caso, a pesquisa escreveu no `research.md`:
+
+> A spec (FR-017) aceita PDFs de até **100 MB**. Logo, contratos entre 50 e 100 MB serão aceitos no cadastro, mas a análise deles vai falhar, e trocar de inline para File API **não** resolve.
+
+E registrou o problema como o risco **R1** do plano.
+
+Repare em duas coisas no que o agente fizer:
+
+- **Ele não deve mudar a spec por conta própria.** A spec manda, mas o plano tem a obrigação de avisar quando ela contradiz o mundo real. Quem decide a correção é você.
+- **De onde veio o aviso.** O agente pode ter achado o limite na documentação do Gemini ou no ADR do capítulo 03, que já diz que o limite real é 50 MB. As duas coisas são boas notícias: uma mostra a pesquisa funcionando, a outra mostra uma decisão escrita sendo usada no momento certo.
+
+:::note[E se não houver ADR?]
+Num projeto real, ninguém escreve um ADR avisando do próprio erro. O que protege você ali é a pesquisa do plano conferir os limites das APIs externas. Se quiser testar isso, peça ao agente, numa sessão nova, para listar os limites do Gemini sem ler o `docs/decisoes/`, e compare com o que a sua spec diz.
+:::
+
+### 5. Corrija onde o erro nasceu: na spec
+
+Quando o plano aponta um conflito com a spec, a correção segue a ordem do SDD: **spec primeiro, depois o resto.** Cole este pedido no Claude Code:
+
+```text
+O plano apontou que a spec aceita PDFs de até 100 MB, mas o Gemini aceita no máximo 50 MB.
+Corrija na ordem do SDD:
+
+1. No spec.md, mude o FR-017 e os casos extremos para 50 MB. Na seção Clarifications, não
+   apague a resposta antiga: acrescente uma emenda pós-plano explicando a mudança.
+2. Propague os 50 MB para research.md, plan.md, data-model.md, contracts/ e quickstart.md, e
+   marque o risco do limite do PDF como resolvido.
+3. Crie um ADR em docs/decisoes/ que substitui o ADR do erro encenado dos 100 MB, e atualize o
+   README das decisões.
+```
+
+Depois, confira: procure por `100 MB` no projeto. Só deve sobrar nos registros históricos (a resposta original em `Clarifications` e o ADR antigo).
+
+No meu caso, a correção mexeu nestes arquivos:
+
+| Arquivo | Mudança |
+|---|---|
+| `spec.md` | FR-017: 100 MB para **50 MB**; caso extremo atualizado; a resposta na seção `Clarifications` ganhou uma "Emenda pós-plano" (o histórico fica) |
+| `research.md` | nota de atualização no R-07; upload com limite de 50 MB |
+| `plan.md` | risco R1 marcado como resolvido; resta o limite de 1.000 páginas do Gemini (baixo impacto) |
+| `data-model.md`, `contracts/api.md`, `quickstart.md` | 50 MB em todos os lugares |
+
+Quanto custa? Mudar um número em meia dúzia de documentos. Se o erro aparecesse na implementação, seria um bug para investigar, reproduzir e corrigir em código e testes.
+
+### 6. Revise o resto do plano
+
+Leia as demais decisões do `research.md` e confira se fazem sentido para você. Se discordar de alguma, peça a mudança agora: é mais barato que depois das tarefas.
+
+No meu caso, as principais foram estas:
+
+| Decisão | Escolha | Por quê |
+|---|---|---|
+| Hash de senha | `scrypt` nativo do Node | Princípio II: nada de pacote se o Node já faz |
+| JWT | biblioteca `jose` | assinar token à mão é arriscado; `jose` não tem dependências |
+| Validação | `zod` nos dois lados | o formulário do shadcn/ui já usa zod |
+| PDFs | pasta temporária (multer, limpa no `finally`) e pasta permanente | concilia a constituição (apagar o temporário) com a spec (guardar para download) |
+| Tempo-limite da IA | `AbortSignal.timeout(15_000)` | nativo |
+| Busca sem acento | coluna normalizada com `normalize("NFD")` | nativo, sem extensão do Postgres |
+| Banco de teste | mesmo container, banco `contratos_test` | testes de rota contra banco real |
+
+Confira também o Constitution Check no `plan.md`: o esperado é que ele passe antes e depois do design, sem violações. Se aparecer uma violação, leia a justificativa. Se não houver justificativa, peça ao agente para ajustar o plano.
+
+### 7. Feche a fase com uma tag
+
+```bash
+git tag -a fase-3-planejamento -m "Fase 3 - Planejamento concluida"
+git push origin fase-3-planejamento
+```
+
+## O que esperar
+
+- Em `specs/001-gestao-contratos-clientes/`: `plan.md`, `research.md`, `data-model.md`, `contracts/` e `quickstart.md`.
+- Várias decisões técnicas no `research.md`, cada uma com alternativas descartadas.
+- Um Constitution Check sem violações, ou com violações justificadas.
+- **Em algum lugar do plano, um aviso sobre o limite de PDF do serviço de IA.** Esse é o ponto de conferência deste capítulo.
+- Depois da correção, 50 MB na spec e nos artefatos do plano, e um ADR novo substituindo o do erro encenado.
+- A tag `fase-3-planejamento` no remoto.
+
+## Divergências comuns
+
+- **O plano não avisou do limite.** Possível: o modelo e a pesquisa variam. Peça ao agente para **conferir os limites das APIs externas** contra o `spec.md` e listar os conflitos. O custo de achar agora é o de uma pergunta.
+- **O plano já corrigiu a spec sozinho.** Não era para isso acontecer: a spec só muda com a sua decisão. Confira o que ele mudou, mantenha se concordar, e garanta que a emenda ficou registrada em `Clarifications` e no ADR.
+- **O plano avisou, mas sugeriu outra correção** (ex.: trocar inline por File API). O limite de 50 MB vale para qualquer forma de envio, então isso não resolve. Corrija na spec.
+- **As versões de pacotes são diferentes das minhas.** Normal. O plano registra a que ele conferiu no npm naquele dia. Use a do seu `research.md`.
+- **O Gemini mudou a API outra vez.** É o risco de depender de serviço externo. O que importa é o plano escolher uma API, registrar a alternativa e anotar o motivo.
+
+**Para comparar com o laboratório:** tag [`fase-3-planejamento`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-3-planejamento).
+
+## O que aprendemos
+
+- **A pesquisa do plano não é burocracia.** É onde a spec encontra o mundo real.
+- **O plano é o primeiro filtro contra decisões erradas da spec.** Ele segue a spec, mas tem a obrigação de levantar a mão quando ela contradiz o mundo real.
+- **Quando o plano aponta um conflito, a correção começa na spec.** Código vem depois.
+- **O agente não deve consertar a spec sozinho.** Quem decide é você, e a decisão fica registrada.
+- **Errar num documento custa uma linha. Errar em código custa um dia.**
+
+## O que vem a seguir
+
+O plano está pronto, mas é só texto: cinco documentos, nenhuma tarefa que alguém possa executar. Falta quebrar tudo em tarefas pequenas, na ordem certa, com critério de pronto. E, antes de deixar subagentes escreverem código, um último comando vai ler tudo e procurar o que ficou inconsistente entre spec, plano e tarefas. Será que sobrou alguma coisa? Vamos ver no [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/08-tarefas-e-analise/).
