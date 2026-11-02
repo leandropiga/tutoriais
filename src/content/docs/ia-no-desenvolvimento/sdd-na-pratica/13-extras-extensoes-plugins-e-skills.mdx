@@ -1,0 +1,229 @@
+---
+title: "13. Extras: extensões, plugins e skills"
+description: O que dá para acrescentar ao Spec Kit e ao Claude Code além do que o tutorial usa, como instalar e o que conferir antes.
+---
+
+## Onde estamos
+
+Este é um capítulo **opcional**. O tutorial funciona sem nada do que está aqui: tudo o que você precisa foi instalado no [capítulo 02](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/02-dois-frameworks-uma-escolha/). Ao longo do caminho, alguns capítulos citam recursos opcionais e mandam para cá.
+
+**Ponto de partida:** qualquer ponto do tutorial. Você pode ler este capítulo a qualquer momento.
+**Tag de chegada:** nenhuma.
+
+## O que vamos fazer e por quê
+
+O Spec Kit e o Claude Code vêm com o essencial, e cada um tem um jeito de receber mais recursos. Vale conhecer, por dois motivos:
+
+- Alguns resolvem atritos que você vai sentir no dia a dia, como criar uma branch por funcionalidade ou fazer commit ao fim de cada etapa.
+- Todos rodam código no seu projeto. Saber o que cada um faz, e o que conferir antes de instalar, é parte do trabalho.
+
+Os três jeitos de estender o ambiente:
+
+| | Extensão do Spec Kit | Plugin do Claude Code | Skill |
+|---|---|---|---|
+| O que é | comandos `/speckit-*` a mais e *hooks* | pacote com skills, agentes, hooks e servidores MCP | um arquivo `SKILL.md` com instruções para o agente |
+| Como instala | `specify extension add <nome>` | `/plugin` ou `claude plugin install` | copiando uma pasta para `.claude/skills/` |
+| Onde fica | `.specify/extensions/` | configuração do Claude Code | `.claude/skills/` ou `~/.claude/skills/` |
+| Exemplo no tutorial | extensão `bug` (opcional, abaixo) | Superpowers | os próprios comandos `/speckit-*` |
+
+## Extensões do Spec Kit
+
+### O que é um hook
+
+Um **hook** é um comando de uma extensão que roda **antes ou depois** de um comando do Spec Kit. Por exemplo: "antes do `/speckit-specify`, crie uma branch" ou "depois do `/speckit-plan`, faça commit".
+
+Cada extensão declara os seus hooks, e o Spec Kit os registra em `.specify/extensions.yml` quando você a instala. Os comandos do Spec Kit leem esse arquivo no início e no fim de cada execução. Há dois tipos de hook:
+
+- **Obrigatório** (`optional: false`): roda sozinho, sem perguntar.
+- **Opcional** (`optional: true`): aparece como sugestão, com uma pergunta, e você decide se roda.
+
+Você pode desligar um hook com `enabled: false` no `.specify/extensions.yml`, ou desligar a extensão inteira.
+
+### Os comandos
+
+Todos rodam dentro de um projeto com o Spec Kit já inicializado:
+
+```bash
+specify extension search [termo]     # procura no catálogo; sem termo, lista tudo
+specify extension info <nome>        # mostra o que a extensão faz, antes de instalar
+specify extension add <nome>         # instala
+specify extension list               # lista as instaladas
+specify extension disable <nome>     # desliga (os comandos e hooks somem)
+specify extension enable <nome>      # religa
+specify extension remove <nome>      # remove (guarda uma cópia da configuração)
+```
+
+Depois de instalar, **reinicie o Claude Code**: os comandos novos só aparecem numa sessão nova.
+
+:::caution[Leia antes de instalar]
+O Spec Kit traz algumas extensões no próprio pacote (como `git` e `bug`). Além delas, existe um [catálogo da comunidade](https://github.github.com/spec-kit/community/extensions.html), com extensões de terceiros. Os mantenedores do Spec Kit só conferem se o cadastro está completo: **não revisam o código**. Rode `specify extension info <nome>` e leia o repositório da extensão antes de instalar.
+:::
+
+### A extensão `git`: uma branch por funcionalidade
+
+No [capítulo 05](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/05-especificacao/) trabalhamos direto na `main`. É a extensão `git` que faz o Spec Kit criar uma branch para cada funcionalidade. Ela vem no pacote do Spec Kit, então não precisa de internet:
+
+```bash
+specify extension add git
+```
+
+Ela registra estes hooks:
+
+| Quando | O que faz | Tipo |
+|---|---|---|
+| antes do `/speckit-constitution` | inicializa o repositório Git com um commit inicial, se ainda não existir | obrigatório |
+| antes do `/speckit-specify` | cria e troca para a branch da funcionalidade, como `001-gestao-contratos-clientes` | obrigatório |
+| antes e depois dos demais comandos (`clarify`, `plan`, `tasks`, `analyze`, `implement`…) | oferece um commit automático | opcional |
+
+Dois detalhes que costumam confundir:
+
+- **A branch e a pasta da spec são coisas separadas.** Quem cria `specs/001-…/` é sempre o `/speckit-specify`. O hook só cria a branch.
+- **O commit automático vem desligado.** Mesmo que você aceite o hook opcional, o commit só acontece se estiver ligado na configuração da extensão.
+
+A configuração fica em `.specify/extensions/git/git-config.yml`. Um exemplo que liga o commit depois da spec e do plano:
+
+```yaml
+branch_numbering: sequential      # ou "timestamp"
+
+auto_commit:
+  default: false                  # vale para todos os comandos
+  after_specify:
+    enabled: true
+    message: "[Spec Kit] Add specification"
+  after_plan:
+    enabled: true
+    message: "[Spec Kit] Add implementation plan"
+```
+
+As opções mudam entre versões. Confira as da sua com `specify extension info git` e no [README da extensão](https://github.com/github/spec-kit/tree/main/extensions/git).
+
+Para desligar sem desinstalar: `specify extension disable git`. A spec continua sendo criada, só sem branch.
+
+:::note[Quando vale instalar]
+Instale no **começo** de um projeto, e não no meio deste tutorial. Os capítulos seguintes contam com o trabalho na `main`, e a implementação do [capítulo 09](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/09-implementar-com-subagentes/) já usa *worktrees* próprios. No meu laboratório eu não usei essa extensão, então não tenho resultado para mostrar: o que está aqui vem da documentação.
+:::
+
+### A extensão `bug`: um fluxo para defeitos
+
+A extensão `bug` também vem no pacote do Spec Kit. Ela cria três comandos, um para cada etapa do tratamento de um defeito:
+
+| Comando | O que faz |
+|---|---|
+| `/speckit-bug-assess` | lê o relato do bug (texto colado ou link), investiga o código e propõe uma correção |
+| `/speckit-bug-fix` | aplica a correção proposta e registra o que mudou |
+| `/speckit-bug-test` | confere se o bug foi mesmo resolvido e registra a verificação |
+
+Cada bug ganha uma pasta própria em `.specify/bugs/<nome-do-bug>/`, com os relatórios das três etapas. Para instalar:
+
+```bash
+specify extension info bug   # ver o que é antes de instalar
+specify extension add bug
+```
+
+No meu caso, instalei a extensão no setup, mas **nenhum** bug da implementação passou por ela: todos foram achados e corrigidos dentro do ciclo de revisão do Superpowers. Conto isso na retrospectiva do [capítulo 12](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/12-deploy-local-e-retrospectiva/). Ela deve fazer mais sentido para defeitos achados **depois** da implementação, quando não há mais uma rodada de revisão aberta.
+
+### Extensões da comunidade
+
+O catálogo da comunidade tem extensões para quase todas as etapas. Alguns exemplos, para você ter uma ideia do que existe:
+
+| Extensão | Para quê |
+|---|---|
+| Spec Refine | atualizar a spec e propagar a mudança para o plano e as tarefas |
+| Verify | conferir o código implementado contra a spec |
+| Reconcile / Spec Sync | achar e corrigir diferenças entre a spec e o que foi implementado |
+| TDD | conduzir o ciclo vermelho-verde-refatorar com registro |
+| Jira / Linear | transformar specs e tarefas em itens dessas ferramentas |
+
+Não testei nenhuma delas. Para ver a lista atual e os nomes exatos, use `specify extension search` ou a [página do catálogo](https://github.github.com/spec-kit/community/extensions.html).
+
+## Plugins do Claude Code
+
+Um **plugin** é um pacote que pode trazer skills, agentes, hooks e servidores MCP de uma vez. O Superpowers, instalado no capítulo 02, é um plugin. Plugins são distribuídos por **marketplaces**, que são catálogos de plugins.
+
+### Os comandos
+
+Dentro do Claude Code:
+
+```text
+/plugin                                              # abre o painel, na aba de descoberta
+/plugin install commit-commands@claude-plugins-official
+/reload-plugins                                      # carrega o que foi instalado, sem reiniciar
+```
+
+No terminal:
+
+```bash
+claude plugin install <nome>@<marketplace> --scope project
+claude plugin list
+claude plugin disable <nome>@<marketplace>
+claude plugin uninstall <nome>@<marketplace>
+claude plugin marketplace add <dono>/<repositorio>   # registra outro marketplace
+```
+
+O **escopo** define onde o plugin vale:
+
+| Escopo | Vale para | Fica gravado em |
+|---|---|---|
+| `user` (padrão) | você, em todos os projetos | `~/.claude/settings.json` |
+| `project` | todos que clonarem o repositório | `.claude/settings.json` (vai para o Git) |
+| `local` | só você, só neste projeto | `.claude/settings.local.json` |
+
+### Plugins do marketplace oficial
+
+O marketplace oficial da Anthropic, `claude-plugins-official`, já vem registrado no Claude Code. Alguns plugins mantidos pela própria Anthropic que combinam com o que você viu neste tutorial:
+
+| Plugin | O que faz |
+|---|---|
+| `commit-commands` | comandos para commit, push e abertura de pull request |
+| `code-review` | revisão de pull request com vários agentes especializados, filtrando falsos positivos |
+| `pr-review-toolkit` | agentes de revisão focados em comentários, testes, tratamento de erro, tipos e simplificação |
+| `security-guidance` | avisos de segurança durante as edições e revisão do código gerado pelo agente |
+| `feature-dev` | um fluxo de desenvolvimento de funcionalidade com agentes para explorar o código, desenhar a arquitetura e revisar |
+| `typescript-lsp` | servidor de linguagem TypeScript/JavaScript, para o agente navegar no código com mais precisão |
+| `claude-md-management` | auditar e manter o `CLAUDE.md` em dia |
+| `claude-code-setup` | analisar o projeto e sugerir hooks, skills, servidores MCP e subagentes |
+| `skill-creator` | criar, melhorar e medir skills |
+| `frontend-design` | gerar interfaces com mais cuidado visual |
+
+A lista foi conferida no marketplace em novembro de 2026, e ele muda com frequência. Para ver o que existe hoje, abra `/plugin`. Eu não usei nenhum deles no laboratório.
+
+:::caution[Um plugin roda código com os seus privilégios]
+Plugins podem trazer hooks e servidores MCP, que executam no seu computador com as mesmas permissões que você. A Anthropic não revisa marketplaces de terceiros. Leia a descrição no painel do `/plugin` e o repositório do plugin antes de instalar, principalmente fora do marketplace oficial.
+:::
+
+## Skills
+
+Uma **skill** é uma pasta com um arquivo `SKILL.md`: instruções que o agente carrega quando a tarefa pede, ou quando você chama pelo nome, como `/speckit-plan`. Os comandos do Spec Kit são skills, e você os vê em `.claude/skills/`.
+
+Elas podem morar em três lugares:
+
+| Onde | Vale para |
+|---|---|
+| `.claude/skills/<nome>/SKILL.md` | este projeto, para quem clonar o repositório |
+| `~/.claude/skills/<nome>/SKILL.md` | você, em todos os projetos |
+| dentro de um plugin | quem instalar o plugin; chamada como `/plugin:skill` |
+
+Para instalar uma skill à mão, copie a pasta dela para um desses lugares. O `SKILL.md` começa com um cabeçalho entre `---`, com pelo menos uma `description`, que o agente usa para decidir quando carregá-la.
+
+:::caution[Leia a skill antes de usar]
+Uma skill pode liberar ferramentas sem pedir sua aprovação (`allowed-tools`) e rodar comandos antes de o agente ler o texto (linhas com `` !`comando` ``). Leia o `SKILL.md` de toda skill que você não escreveu, inclusive as que já vêm num repositório clonado.
+:::
+
+## O que esperar
+
+- Se instalou a extensão `git`: `specify extension list` mostra `git`, e o próximo `/speckit-specify` cria uma branch nova.
+- Se instalou a extensão `bug`: `/speckit-bug` lista os três comandos depois de reiniciar o Claude Code.
+- Se instalou um plugin: `claude plugin list` o mostra, e os comandos dele aparecem com o prefixo do plugin.
+
+## Divergências comuns
+
+- **O comando novo não aparece.** Reinicie o Claude Code, ou use `/reload-plugins` no caso de plugins.
+- **`specify extension add` não acha a extensão.** As da comunidade ficam num catálogo só de consulta. Use `specify extension info <nome>` para achar o endereço do pacote e instale com `specify extension add <nome> --from <endereço>`.
+- **O hook não rodou.** Confira se ele está com `enabled: true` no `.specify/extensions.yml` e se a extensão não está desligada (`specify extension list`).
+- **O nome ou as opções mudaram.** Extensões e plugins evoluem rápido. Confira com `specify extension info` ou no painel do `/plugin`.
+
+## O que aprendemos
+
+- **O Spec Kit e o Claude Code crescem por pacotes.** Extensões, plugins e skills resolvem atritos sem mudar o processo.
+- **Hooks encaixam automação nas etapas do SDD.** Obrigatórios rodam sozinhos; opcionais perguntam.
+- **Tudo o que você instala roda código no seu projeto.** Leia antes, instale só o que vai usar e desligue o que não usar.
