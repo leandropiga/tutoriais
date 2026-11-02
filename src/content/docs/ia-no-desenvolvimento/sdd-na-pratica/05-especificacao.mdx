@@ -1,0 +1,145 @@
+---
+title: 05. Especificação
+description: O que o sistema faz, para quem e como saber se ficou certo, por histórias de usuário, com o prompt completo.
+---
+
+## Onde estamos
+
+Quinto capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/04-constituicao/) escrevemos a constituição, com as regras que valem para o projeto inteiro. Agora falta dizer o que o sistema faz.
+
+**Ponto de partida:** o seu projeto ao fim do capítulo 04, com a constituição em `.specify/memory/constitution.md`.
+**Ponto de chegada:** a spec criada, antes da clarificação. Não há tag aqui: a `fase-2-especificacao` só fecha no [capítulo 06](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/06-nao-tinha-pensado-nisso/).
+
+## O que vamos fazer e por quê
+
+Vamos escrever a **especificação**. É o documento que diz *o que* o sistema faz, para quem e como saber se ficou certo. Nada de tecnologia: a stack já está na constituição; a spec fala de telas, regras e comportamentos, organizados em **histórias de usuário**, cada uma com um **teste independente** (dá para entregar e testar uma história sem as outras).
+
+No vibe coding, isso mora no seu prompt do dia, e some no dia seguinte. Aqui vira um arquivo no repositório, que o agente relê toda vez.
+
+## Passo a passo
+
+Abra o Claude Code na pasta do projeto.
+
+### 1. A especificação
+
+O texto da spec partiu de uma descrição funcional que eu já tinha. Duas escolhas minhas:
+
+- Tirei o nome "Gemini" da spec e escrevi "um serviço de IA". O fornecedor já está fixado na constituição; a spec só descreve comportamento.
+- **Deixei lacunas de propósito**: o endereço é um campo só, o PDF não tem limite de tamanho e eu não disse o que acontece se a IA demorar. Queria ver o agente achar esses buracos. Num projeto seu, você preencheria o que já sabe.
+
+Digite `/speckit-specify` e cole o texto:
+
+```text
+/speckit-specify Escreva a especificação em português do Brasil.
+
+Desenvolva a especificação funcional da Aplicação de Gestão de Contratos de Clientes. O sistema
+tem dois domínios principais: Clientes e Contratos (de compra e venda). Quem usa é um(a)
+operador(a) administrativo(a) de uma pequena empresa, que hoje guarda os contratos em pastas e
+e-mails e tem dificuldade para encontrá-los, contá-los e lembrar dos riscos de cada um.
+
+## Clientes
+
+- O cadastro tem os seguintes campos obrigatórios: Nome Completo, Telefone, Endereço, CPF e RG.
+- Há uma tela de listagem de clientes com paginação e filtros por Nome e por CPF.
+- Um cliente pode existir sem nenhum contrato vinculado.
+
+## Contratos
+
+- O cadastro registra: Título do Contrato, Data de Assinatura, Cliente (escolhido entre os
+  clientes cadastrados) e o arquivo do contrato, aceito somente no formato PDF.
+- Um cliente pode ter vários contratos (relação 1:N).
+- Um contrato não pode existir sem cliente: ele precisa estar vinculado a um cliente válido.
+- Há uma tela de listagem de contratos com paginação e filtros por título e por intervalo de
+  datas.
+
+## Análise do contrato por IA
+
+- Na tela de detalhes de um contrato existe um botão "Solicitar Análise de PDF".
+- Ao clicar, o PDF é enviado de forma segura a um serviço de IA, que devolve um resumo executivo
+  dos riscos jurídicos e das cláusulas críticas do contrato.
+- O resultado aparece em um painel na mesma tela, que continua visível depois que a análise
+  termina.
+
+## Navegação, painel e acesso
+
+- O menu lateral tem três áreas: Home (painel), Clientes e Contratos.
+- A Home mostra um painel com:
+  1. um gráfico com a distribuição dos clientes por estado (UF);
+  2. o total de contratos cadastrados;
+  3. o total de clientes cadastrados.
+- O acesso ao sistema exige login com usuário e senha.
+- Existe um Menu de Perfil onde a pessoa logada edita seus dados: Nome, URL da foto de perfil e
+  Telefone.
+
+## Fora do escopo desta versão
+
+- Cadastro público de usuários, recuperação de senha e perfis de acesso diferentes.
+- Assinatura digital, versionamento de contratos e alertas de vencimento.
+```
+
+O comando conferiu *hooks*, leu `.specify/init-options.json` (numeração `sequential`, então a primeira funcionalidade ganhou o número `001`), criou `specs/001-gestao-contratos-clientes/`, gravou o caminho em `.specify/feature.json` (é assim que `clarify`, `plan` e `tasks` sabem onde está a spec), escreveu o `spec.md` a partir do template e validou contra um checklist de qualidade.
+
+Observação: no Spec Kit 1.2.0, criar uma branch por funcionalidade é tarefa de um *hook* opcional. Como não instalei nenhum, continuei na `main`. Para um tutorial, o histórico linear fica mais fácil de seguir com as tags.
+
+### 2. Conheça o que saiu
+
+| Seção | Conteúdo |
+|---|---|
+| Histórias de usuário | 6, com prioridade: login (P1), clientes (P1), contratos (P2), análise por IA (P3), painel (P4), perfil (P5) |
+| Requisitos funcionais | 34 (FR-001 a FR-034) |
+| Entidades | Usuário, Cliente, Contrato, Análise de Contrato |
+| Critérios de sucesso | 9, todos mensuráveis (ex.: "encontrar um contrato em menos de 30 s") |
+
+Cada história tem **o motivo da prioridade**, um **teste independente** e **cenários de aceitação** no formato Dado, Quando, Então. Um exemplo, da primeira história:
+
+> **Teste independente:** tentar abrir qualquer tela sem login (deve ir para a tela de login), entrar com credenciais válidas (deve ver o menu) e sair (deve voltar ao login).
+>
+> **Dado** um usuário cadastrado, **Quando** informa uma senha errada, **Então** continua na tela de login e vê uma mensagem genérica de credenciais inválidas, sem indicar qual dos dois campos está errado.
+
+### 3. A validação corrigiu a própria spec
+
+Na primeira passada, o checklist de qualidade **reprovou** um requisito: o FR-030 dizia "demora excessiva da IA". Quanto é excessivo? Não dá para testar. O agente trocou por um padrão de mercado, 60 segundos, e anotou nas **Premissas**. (Eu queria 15 segundos; isso vai aparecer no próximo capítulo.)
+
+O checklist, por design, deixa no máximo **três** marcadores `[NEEDS CLARIFICATION]`. O agente usou os três:
+
+| Requisito | Pergunta |
+|---|---|
+| FR-007 | O endereço é um campo só, mas o gráfico precisa da UF. Divide o endereço? |
+| FR-017 | Qual é o tamanho máximo do PDF? |
+| FR-010 | O que acontece ao excluir um cliente que tem contratos? |
+
+Ele ofereceu responder ali mesmo. Eu preferi deixar para o `/speckit-clarify`, que é a etapa feita para isso.
+
+:::caution[⚠️ Erro encenado]
+O valor que eu vou responder para o tamanho do PDF no próximo capítulo (100 MB) **é de propósito**. O Gemini aceita no máximo 50 MB por PDF, e eu não conto isso ao agente. Num projeto real, você leria os limites da API antes de responder. Quero ver o que o SDD faz com o erro.
+:::
+
+### 4. Leia as Premissas
+
+Algumas "perguntas em aberto" da visão do produto não viraram pergunta. O agente decidiu sozinho e anotou nas **Premissas**: o primeiro usuário é criado na instalação, o CPF é único e validado, e a análise da IA fica guardada (só a mais recente). São escolhas razoáveis, mas mostram por que é preciso **ler as Premissas**: é ali que o agente esconde as decisões que tomou por você.
+
+## O que esperar
+
+- `specs/001-gestao-contratos-clientes/spec.md` com seis histórias, mais de trinta requisitos e três `[NEEDS CLARIFICATION]`.
+- `specs/001-gestao-contratos-clientes/checklists/requirements.md` com a maioria dos itens marcados (no meu, 15 de 16).
+- Nenhum código de aplicação.
+
+Para conferir: abra a spec e procure, em cada história, o **teste independente**. Se alguma não tiver, a história é grande demais ou vaga demais.
+
+## Divergências comuns
+
+- **O número de histórias ou requisitos não bate.** Normal. O modelo agrupa de outro jeito. O que importa é cada história ter prioridade, teste independente e cenários.
+- **Não apareceram exatamente três perguntas, ou outras.** Também normal. Trate o que aparecer no próximo capítulo.
+- **O agente gravou o `feature.json` e ele apareceu no `git status`.** No meu laboratório esse arquivo fica no `.gitignore`: é estado local da sua máquina.
+
+**Para comparar com o laboratório:** não há tag no fim deste capítulo. A mais próxima é [`fase-2-especificacao`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-2-especificacao), que já inclui a clarificação do capítulo 06.
+
+## O que aprendemos
+
+- **O limite de três perguntas força o agente a priorizar**: o resto vira premissa. Leia as premissas.
+- **O checklist de qualidade pega requisito vago** ("demora excessiva") antes que ele vire código vago.
+- **Revisão vale até para a IA.** No primeiro rascunho da spec, o agente esqueceu de marcar a lacuna do endereço e só percebeu ao revisar o próprio texto.
+
+## O que vem a seguir
+
+A spec está pronta, com 34 requisitos, seis histórias e um checklist quase todo verde. Parece completa. **Será que não ficou nada de fora?** Eu tinha três lacunas em mente e deixei de propósito. Mas quando rodei o próximo comando, ele me fez cinco perguntas, e uma delas eu realmente nem tinha pensado. Está no [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/06-nao-tinha-pensado-nisso/).

@@ -1,13 +1,13 @@
 ---
-title: 10. Validação e dívidas
+title: 11. Validação e dívidas
 description: O roteiro manual de 14 passos com a IA de verdade, como ler o log quando a IA devolve erro e a rodada 7, que fechou as cinco dívidas que mexem com produção e segurança.
 ---
 
 ## Onde estamos
 
-Décimo capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/09-revisao-em-camadas-e-rulings/) as rodadas 2 a 6 terminaram com a suíte toda verde.
+Décimo primeiro capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/10-revisao-em-camadas-e-rulings/) as rodadas 2 a 6 terminaram com a suíte toda verde.
 
-**Ponto de partida:** o seu projeto ao fim do capítulo 09, com as rodadas 2 a 6 mergeadas e o Docker disponível.
+**Ponto de partida:** o seu projeto ao fim do capítulo 10, com as rodadas 2 a 6 mergeadas e o Docker disponível.
 **Tag de chegada:** `fase-6-validacao` marca o fim da validação manual (passos 1 a 5 abaixo). A rodada 7 (passos 6 a 8) termina no merge da rodada 7, que não tem tag.
 
 ## O que vamos fazer e por quê
@@ -189,7 +189,7 @@ A rodada 7 foi mergeada na `main` como um commit de etapa à parte.
 
 **Para comparar com o laboratório:** tag [`fase-6-validacao`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-6-validacao). Ela marca o fim da validação manual, então a rodada 7 não está nela.
 
-## O que isso mostrou
+## O que aprendemos
 
 - **Mudou o `.env`? Reinicie o servidor.** Variáveis de ambiente são lidas só na partida.
 - **Uma IA externa vai ficar indisponível de vez em quando.** Tratar isso com mensagem amigável não é capricho, é requisito.
@@ -199,6 +199,6 @@ A rodada 7 foi mergeada na `main` como um commit de etapa à parte.
 - **Dividir o bundle traz uma falha nova:** se um pedaço não carregar (por exemplo depois de um deploy, com nome de arquivo antigo), a tela quebra. Eu ainda não tinha um `ErrorBoundary`. Eu devia ter planejado isso desde o início; virou dívida.
 - **Divergir do plano é ok, se ficar escrito.**
 
-## Gancho
+## O que vem a seguir
 
-Os 14 passos passaram, as cinco dívidas fecharam, e a aplicação roda inteira localmente. Falta uma decisão que o tutorial inteiro vinha adiando: **onde isso roda?** Eu vou decidir isso no [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/11-deploy-local-e-retrospectiva/), e depois olhar para trás e dizer, com honestidade, o que funcionou, o que não funcionou e o que eu faria diferente.
+Os 14 passos passaram, as cinco dívidas fecharam, e a aplicação roda inteira localmente. Falta uma decisão que o tutorial inteiro vinha adiando: **onde isso roda?** Eu vou decidir isso no [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/12-deploy-local-e-retrospectiva/), e depois olhar para trás e dizer, com honestidade, o que funcionou, o que não funcionou e o que eu faria diferente.

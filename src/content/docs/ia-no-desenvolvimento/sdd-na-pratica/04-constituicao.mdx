@@ -1,0 +1,153 @@
+---
+title: 04. Constituição
+description: As regras que valem para o projeto inteiro, com o prompt completo e o que o /speckit-constitution faz com ele.
+---
+
+## Onde estamos
+
+Quarto capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/03-ideacao/) escrevemos a visão do produto, que diz o que queremos mas não tem regra nenhuma.
+
+**Ponto de partida:** o seu projeto ao fim do capítulo 03, com a visão do produto em `docs/ideacao/visao-do-produto.md`.
+**Ponto de chegada:** a constituição gravada. Não há tag aqui: a fase 2 (constituição, especificação e clarificação) só fecha no [capítulo 06](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/06-nao-tinha-pensado-nisso/), com a tag `fase-2-especificacao`.
+
+## O que vamos fazer e por quê
+
+Vamos escrever a **constituição**. São as regras que valem para tudo o que vier depois, para qualquer funcionalidade: qual stack usar, como testar, o que é proibido. A spec diz *o quê* construir; a constituição diz *como a gente trabalha aqui*. Nos comandos seguintes (`/speckit-plan`, `/speckit-tasks`), o Spec Kit relê esse arquivo e confere se o plano respeita as regras. Pense nela como o contrato de convivência entre você e o agente.
+
+A spec, que diz *o que* o sistema faz, fica para o [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/05-especificacao/).
+
+No vibe coding, essas regras moram no seu prompt do dia, e somem no dia seguinte. Aqui elas viram um arquivo no repositório, que o agente relê toda vez.
+
+## Passo a passo
+
+Antes de começar: abra o Claude Code na pasta do projeto. Se você instalou o Spec Kit e o Superpowers nesta sessão, reinicie (`/exit` e `claude`), para os comandos `/speckit-*` aparecerem.
+
+### 1. A constituição
+
+**Como escrever o texto**
+
+O `/speckit-constitution` aceita texto livre: não existe sintaxe obrigatória. Os "Artigos I, II e III" do exemplo são só um jeito de organizar as ideias. Tópicos ou parágrafos funcionam do mesmo jeito.
+
+O que define o formato final é o template do Spec Kit. O agente encaixa o seu texto em **princípios** numerados (I, II, III…), **duas seções livres** (como a stack e o fluxo de desenvolvimento) e uma seção de **governança** (como alterar a constituição). Você vai ver essa reorganização no passo 2.
+
+Algumas dicas valem mais do que o formato:
+
+- **Uma regra por item**, escrita como algo que dá para conferir com teste (veja a nota sobre o PDF no fim do capítulo).
+- **Nomes e versões fixos** (pastas, bibliotecas, modelo de IA), para o agente não escolher por você.
+- **Só regras do projeto.** Pedidos de funcionalidade ficam para a spec. O comando os ignora e sugere o `/speckit-specify`.
+- **O idioma na primeira linha**, se você quer a constituição em português.
+
+Agora é sua vez, no Claude Code, digite `/speckit-constitution` e cole o texto abaixo **na mesma mensagem**:
+
+```text
+/speckit-constitution Escreva a constituição em português do Brasil.
+
+# Constituição do Projeto: Sistema de Gestão de Contratos
+
+## Artigo I: Arquitetura e Stack Tecnológica
+
+1. O projeto usa arquitetura monorepo, com frontend e backend em diretórios separados
+   (`backend/` e `frontend/`).
+2. Backend: Node.js com Express e TypeScript. O ORM é o Prisma, conectado ao PostgreSQL que roda
+   em Docker (docker-compose na raiz do repositório).
+3. Frontend: React com Vite, TypeScript e Tailwind CSS versão 4.
+4. Design System: o frontend usa exclusivamente componentes do shadcn/ui, copiados para o código
+   do projeto, para termos controle total sobre a apresentação.
+
+## Artigo II: Qualidade e Metodologia de Implementação
+
+1. Test-First (inegociável): toda lógica de negócio e todo endpoint da API começam por um teste
+   que falha (TDD: vermelho → verde → refatorar). Usamos Vitest no backend e no frontend; rotas
+   HTTP são testadas com supertest.
+2. Simplicidade: evitar dependências de terceiros desnecessárias. Preferir recursos nativos da
+   plataforma a novos pacotes, reduzindo riscos na cadeia de suprimentos.
+3. Resiliência: todas as rotas da API passam por um middleware centralizado de tratamento de
+   erros. Erros nunca expõem detalhes internos do servidor e sempre retornam JSON tipado e
+   padronizado.
+
+## Artigo III: Integrações Críticas e Segurança
+
+1. Arquivos: PDFs são recebidos com o pacote multer, gravados temporariamente em disco antes do
+   envio à API externa e apagados logo após o processamento, inclusive em caso de erro.
+2. Análise por IA: o sistema se comunica exclusivamente com a API do Google Gemini, usando o SDK
+   oficial @google/genai (versão mais recente) e o modelo gemini-3.8-flash. A chave da API fica
+   somente no servidor, em variável de ambiente, e nunca chega ao frontend.
+3. Autenticação: login por usuário e senha, gerando token JWT armazenado obrigatoriamente em
+   cookie HttpOnly, para proteger contra ataques de Cross-Site Scripting (XSS).
+```
+
+**O que o comando faz**
+
+O `/speckit-constitution` mexe em **um arquivo só**: `.specify/memory/constitution.md`. Ele já existe desde o capítulo 02, criado pelo `specify init`, mas até agora é só um modelo, cheio de campos como `[PROJECT_NAME]` e `[PRINCIPLE_1_NAME]`.
+
+Quando você roda o comando, o agente:
+
+1. **Lê o modelo** e localiza todos os campos a preencher.
+2. **Preenche cada campo** com o seu texto. O que você não disse, ele deduz do repositório (README, ADRs, visão do produto) ou completa por conta própria. Por isso o passo 2 deste capítulo existe.
+3. **Define a versão e as datas.** A primeira vez vira a versão **1.0.0**, com a data de hoje como ratificação. Mudanças futuras sobem a versão: correção de texto muda o último número, princípio novo muda o do meio, e remover ou redefinir um princípio muda o primeiro.
+4. **Coloca um resumo no topo do arquivo**, o *Sync Impact Report*: um comentário HTML com o que mudou, para você revisar.
+5. **Confere o resultado**: nenhum campo vazio, datas no formato certo e princípios escritos como regras verificáveis.
+6. **Grava o arquivo** por cima do modelo e mostra um resumo: versão, pendências e uma sugestão de mensagem de commit.
+
+O comando **não faz commit** e não mexe em mais nada do projeto. A partir daqui, o `/speckit-plan` e os comandos seguintes releem esse arquivo para conferir se o que estão propondo respeita as regras.
+
+### 2. Leia o que o agente acrescentou
+
+Isto importa: **o agente não só copiou, ele completou.** O meu texto tinha três artigos. O template do Spec Kit tem espaço para cinco princípios e duas seções livres, e o agente reorganizou assim:
+
+| No meu texto | Na constituição gerada |
+|---|---|
+| Art. II.1 Test-First | I. Test-First (INEGOCIÁVEL) |
+| Art. II.2 Simplicidade | II. Simplicidade e Dependências Mínimas |
+| Art. II.3 Resiliência | III. Resiliência e Erros Padronizados |
+| Art. III.1 Arquivos | IV. Arquivos Temporários com Ciclo de Vida Garantido |
+| Art. III.2 Gemini | V. Integração Exclusiva com o Google Gemini |
+| Art. III.3 Autenticação | VI. Autenticação com JWT em Cookie HttpOnly |
+| Art. I.4 shadcn/ui | VII. Design System Exclusivo com shadcn/ui |
+| Art. I.1 a I.3 (stack) | seção "Arquitetura e Stack Tecnológica" |
+| (não estava no texto) | seção "Fluxo de Desenvolvimento e Portões de Qualidade" |
+| (não estava no texto) | Governança: emendas e versionamento |
+
+Cada princípio ganhou um parágrafo **"Por quê"**. Regras com motivo são mais fáceis de seguir, e de discutir quando alguém quiser mudar.
+
+Algumas regras que não estavam no meu texto e que o agente colocou:
+
+- Testar a remoção do PDF no caminho de sucesso **e** no de erro (Princípio IV).
+- Proibir guardar o token em `localStorage` ou `sessionStorage` (Princípio VI).
+- Justificar no plano técnico qualquer dependência nova que não esteja na constituição (Princípio II).
+- Emendas pelo próprio `/speckit-constitution`, com um ADR em `docs/decisoes/`, e versionamento semântico.
+
+Eu li uma por uma e aceitei todas: só deixam explícito o que o texto já pedia. Mas fica a lição: **leia a constituição gerada.** Ela vai mandar em todo o resto do projeto.
+
+Antes de commitar, apague o *Sync Impact Report*, o comentário HTML no topo do arquivo. O próprio Spec Kit pede isso: ele serve só para a sua revisão.
+
+## O que esperar
+
+- `.specify/memory/constitution.md` na versão 1.0.0, com os seus princípios (no meu caso, sete), sem o *Sync Impact Report* no topo.
+- Nenhum código de aplicação.
+
+Para conferir: abra a constituição e veja se cada princípio tem uma regra que dá para conferir e um "Por quê".
+
+## Divergências comuns
+
+- **Os títulos da constituição saíram em inglês, ou em outra ordem.** Os níveis de título (`##`, `###`) precisam ser os do template, que é o que o Spec Kit exige. O idioma dos títulos você pode ajustar.
+- **No PowerShell 5.1, `Get-Content` mostra acentos quebrados** (`ConstituiÃ§Ã£o`). O arquivo está certo, em UTF-8. Use `Get-Content -Encoding utf8` ou abra no editor.
+
+**Para comparar com o laboratório:** não há tag no fim deste capítulo. A mais próxima é [`fase-2-especificacao`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-2-especificacao), que já inclui a especificação e a clarificação dos capítulos 05 e 06. A constituição está em `.specify/memory/constitution.md`.
+
+## O que aprendemos
+
+- **A constituição é curta, mas pesa muito.** Tudo o que vem depois é conferido contra ela. Por isso cada regra precisa ser escrita de um jeito que dê para provar com teste (veja a nota abaixo sobre o PDF). Mais adiante você vai ver o roteiro manual conferir exatamente isso.
+- **O agente completa o que você escreve.** Ele reorganiza o texto no formato do template e acrescenta regras. Leia a constituição gerada antes de aceitar.
+
+:::note[Por que "apagados (...) inclusive em caso de erro"]
+O Artigo III.1 da constituição diz que os PDFs temporários são "apagados logo após o processamento, inclusive em caso de erro". O contexto: para a IA analisar um contrato, o PDF é gravado numa pasta temporária, enviado ao Gemini e depois apagado.
+
+Uma forma comum de escrever essa regra seria "apagar o PDF de forma síncrona". Só que isso descreve **como** o código apaga, não **o que** precisa acontecer. E não cobre o caso que importa: se o Gemini der erro antes da linha que apaga, o código não chega nela, e o PDF fica esquecido no disco.
+
+"Inclusive em caso de erro" é uma garantia, e garantia vira teste: simule uma falha do Gemini e confira se a pasta temporária ficou vazia. Regra que não vira teste não é regra, é desejo.
+:::
+
+## O que vem a seguir
+
+As regras estão escritas: stack, testes, segurança. Mas ainda não dissemos **o que** o sistema faz. No [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/05-especificacao/), a visão do produto vira uma especificação por histórias de usuário, cada uma com um jeito de saber se ficou certa.

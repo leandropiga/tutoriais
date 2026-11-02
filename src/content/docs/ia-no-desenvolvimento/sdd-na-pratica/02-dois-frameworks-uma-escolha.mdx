@@ -229,7 +229,7 @@ specify extension info bug   # ver o que é antes de instalar
 specify extension add bug
 ```
 
-Ela cria três comandos, `/speckit-bug-assess`, `/speckit-bug-fix` e `/speckit-bug-test`. Um aviso honesto: no meu laboratório eu **não usei** esse fluxo nos bugs reais da implementação (conto isso no [capítulo 11](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/11-deploy-local-e-retrospectiva/)). Se quiser reduzir ruído, pode pular a extensão.
+Ela cria três comandos, `/speckit-bug-assess`, `/speckit-bug-fix` e `/speckit-bug-test`. Um aviso honesto: no meu laboratório eu **não usei** esse fluxo nos bugs reais da implementação (conto isso no [capítulo 12](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/12-deploy-local-e-retrospectiva/)). Se quiser reduzir ruído, pode pular a extensão.
 
 ### 6. Instale o Superpowers
 
@@ -300,12 +300,12 @@ git push origin fase-0-setup
 
 **Para comparar com o laboratório:** tag [`fase-0-setup`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-0-setup). Lá ela já traz a ideação do capítulo 03 junto (veja a nota sobre a ordem das tags na [página inicial](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/)).
 
-## O que isso mostrou
+## O que aprendemos
 
 - Conferir a versão **depois** de instalar (`--version`, `plugin list`) evita seguir o tutorial com uma ferramenta desatualizada.
 - Ler as notas de versão antes de aceitar o que o marketplace entrega é uma decisão pequena, mas vale o registro: toda divergência do plano original merece um ADR, porque daqui a um mês você não vai lembrar por que escolheu um caminho e não o outro.
 - Colocar a regra dos ADRs no `CLAUDE.md` transforma o hábito em padrão: o Claude passa a registrar as decisões sem você pedir.
 
-## Gancho
+## O que vem a seguir
 
 Ferramentas instaladas, repositório criado, e nada ainda no ar. Mas uma coisa continua igual a antes: eu tenho só uma ideia solta de aplicação na cabeça. Ideia solta não é spec, e se eu pedir "faça um sistema de contratos" agora, o agente vai chutar o resto. No [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/03-ideacao/) eu mostro como transformei essa ideia numa visão de produto, e o que fiz com o texto que a IA me devolveu.

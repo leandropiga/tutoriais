@@ -124,10 +124,10 @@ Repare em três coisas nesse texto:
 
 1. É **não técnico**. Diz o quê e por quê. Nada de banco, framework ou rota.
 2. Tem uma seção "O que não entra". Dizer o que fica de fora poupa discussão depois.
-3. Termina com **perguntas em aberto, deixadas sem resposta de propósito**. Eu quis ver se o `/speckit-clarify` (que você vai conhecer no capítulo 05) achava essas lacunas sozinho.
+3. Termina com **perguntas em aberto, deixadas sem resposta de propósito**. Eu quis ver se o `/speckit-clarify` (que você vai conhecer no capítulo 06) achava essas lacunas sozinho.
 
 :::caution[⚠️ Erro encenado]
-Os **100 MB** de limite de PDF na seção "Mudanças que já sabemos que vão acontecer" **são de propósito**. O Gemini aceita no máximo 50 MB por PDF. Eu quis provocar esse conflito para mostrar como o SDD o resolve. Num projeto real, você leria os limites da API **antes** de escrever a spec. Aqui eu "esqueci" de propósito, e conto no capítulo 06 o que aconteceu de verdade.
+Os **100 MB** de limite de PDF na seção "Mudanças que já sabemos que vão acontecer" **são de propósito**. O Gemini aceita no máximo 50 MB por PDF. Eu quis provocar esse conflito para mostrar como o SDD o resolve. Num projeto real, você leria os limites da API **antes** de escrever a spec. Aqui eu "esqueci" de propósito, e conto no capítulo 07 o que aconteceu de verdade.
 :::
 
 ### 4. Registre as decisões da fase
@@ -144,7 +144,7 @@ Registre como ADRs curtos em docs/decisoes/, e liste no README:
 
 Resumo do que ficou decidido:
 
-- **Bugs reais e um encenado** (o dos 100 MB). Spoiler: o encenado nunca virou bug; o plano o pegou antes. Está no capítulo 06.
+- **Bugs reais e um encenado** (o dos 100 MB). Spoiler: o encenado nunca virou bug; o plano o pegou antes. Está no capítulo 07.
 - **Testes com Vitest no backend e no frontend**, em vez de Jest no backend: uma ferramenta só, com TypeScript e ESM nativos.
 - **Deploy só local.**
 
@@ -174,13 +174,13 @@ Para conferir: abra a visão do produto e veja se alguém que nunca viu o projet
 
 **Para comparar com o laboratório:** tag [`fase-1-ideacao`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-1-ideacao). Lá ela ainda não tem o Spec Kit nem o Superpowers, porque no laboratório a ideação veio antes da instalação.
 
-## Conclusão
+## O que aprendemos
 
 - **Especificação ruim gera código ruim.** Por isso a visão do produto vem antes de qualquer spec: o que não estiver escrito aqui, o agente vai chutar depois.
 - **IA com pesquisa erra e a internet muda rápido.** Comandos e versões que a IA afirma valem uma conferência na fonte oficial antes de você aceitar.
 - **Para provocar um erro de propósito, é preciso entender o sistema tão bem quanto para evitá-lo.** Eu quase errei a cena do "bug encenado": a pesquisa inicial dizia que o limite de 50 MB valia só para envio direto, e que trocar para a File API do Gemini resolveria. Lendo com mais calma, o limite vale para **qualquer** forma de envio. Redesenhei a cena: a causa raiz deixou de ser "inline contra File API" e virou "a spec contradiz um limite do fornecedor", que é um aprendizado de SDD mais útil.
 - **Decisões que contrariam o que o agente "sabe" ficam no `CLAUDE.md`.** Comando novo, modelo novo, versão nova: registrados ali, o agente não volta para a versão antiga sem perceber.
 
-## Próximos passos
+## O que vem a seguir
 
-A visão do produto diz o que eu quero, mas não tem **regra nenhuma**. Não diz que testes são obrigatórios, que o arquivo temporário precisa ser apagado mesmo se der erro, nem como a senha deve ser guardada. Isso fica a cargo de cada pedido ao agente, que é exatamente o problema do vibe coding. No [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/04-constituicao-e-especificacao/) eu escrevo as regras que valem para o projeto inteiro, a **constituição**, e depois a **especificação**.
+A visão do produto diz o que eu quero, mas não tem **regra nenhuma**. Não diz que testes são obrigatórios, que o arquivo temporário precisa ser apagado mesmo se der erro, nem como a senha deve ser guardada. Isso fica a cargo de cada pedido ao agente, que é exatamente o problema do vibe coding. No [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/04-constituicao/) eu escrevo as regras que valem para o projeto inteiro: a **constituição**.

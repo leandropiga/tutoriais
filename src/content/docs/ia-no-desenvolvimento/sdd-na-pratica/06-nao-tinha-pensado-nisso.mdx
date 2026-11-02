@@ -1,13 +1,13 @@
 ---
-title: "05. O momento 'não tinha pensado nisso'"
+title: "06. O momento 'não tinha pensado nisso'"
 description: O /speckit-clarify faz até cinco perguntas sobre a sua própria spec. Uma delas eu nem tinha pensado, e é por isso que essa etapa existe.
 ---
 
 ## Onde estamos
 
-Quinto capítulo, o mais importante do tutorial. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/04-constituicao-e-especificacao/) escrevemos a constituição e a especificação.
+Sexto capítulo, o mais importante do tutorial. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/05-especificacao/) escrevemos a especificação.
 
-**Ponto de partida:** o seu projeto ao fim do capítulo 04 (a spec recém-criada, antes da clarificação). Não existe tag aqui, porque a fase 2 só fecha no fim deste capítulo.
+**Ponto de partida:** o seu projeto ao fim do capítulo 05 (a spec recém-criada, antes da clarificação). Não existe tag aqui, porque a fase 2 só fecha no fim deste capítulo.
 **Tag de chegada:** `fase-2-especificacao`.
 
 ## O que vamos fazer e por quê
@@ -94,7 +94,7 @@ Duas dúvidas ficaram de fora por baixo impacto: como criar o primeiro usuário 
 
 ### 5. Feche a fase com uma tag
 
-A fase 2 começou no capítulo 04, com a constituição e a especificação, e termina aqui, com a clarificação.
+A fase 2 começou nos capítulos 04 e 05, com a constituição e a especificação, e termina aqui, com a clarificação.
 
 ```bash
 git tag -a fase-2-especificacao -m "Fase 2 - Especificacao concluida"
@@ -121,7 +121,7 @@ Para conferir: abra o `spec.md`, procure por `NEEDS CLARIFICATION` (não deve ac
 
 **Para comparar com o laboratório:** tag [`fase-2-especificacao`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-2-especificacao).
 
-## O que isso mostrou
+## O que aprendemos
 
 - **O clarify não é um formulário: ele descobre perguntas.** Duas das cinco não estavam no meu roteiro de respostas, e uma delas (o bloqueio do login) eu não tinha pensado de jeito nenhum.
 - **A recomendação do agente é um ponto de partida.** Eu discordei duas vezes.
@@ -130,6 +130,6 @@ Para conferir: abra o `spec.md`, procure por `NEEDS CLARIFICATION` (não deve ac
 
 Vale a pena parar um minuto aqui: no vibe coding, essas cinco perguntas teriam sido cinco decisões silenciosas, tomadas pelo modelo na hora de gerar código, sem eu saber que existiam. Eu só descobriria o bloqueio de login quando um teste ou um usuário mostrasse o furo.
 
-## Gancho
+## O que vem a seguir
 
-A spec agora diz: **PDF de até 100 MB.** Parece razoável, e eu mesmo escolhi. Mas eu sei uma coisa que o agente não sabe: o serviço de IA que vai analisar esse PDF aceita só 50 MB. O que acontece quando o próximo comando, o `/speckit-plan`, olhar para esse número? Descubra no [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/06-o-plano-que-pegou-o-bug/).
+A spec agora diz: **PDF de até 100 MB.** Parece razoável, e eu mesmo escolhi. Mas eu sei uma coisa que o agente não sabe: o serviço de IA que vai analisar esse PDF aceita só 50 MB. O que acontece quando o próximo comando, o `/speckit-plan`, olhar para esse número? Descubra no [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/07-o-plano-que-pegou-o-bug/).

@@ -1,13 +1,13 @@
 ---
-title: 08. Implementar com subagentes
+title: 09. Implementar com subagentes
 description: "Como executar o tasks.md com o Superpowers, usando worktree, um subagente por tarefa, revisão, ledger e Rulings. Com o prompt completo da primeira rodada e o custo honesto."
 ---
 
 ## Onde estamos
 
-Oitavo capítulo. Até aqui só escrevemos documentos.
+Nono capítulo. Até aqui só escrevemos documentos.
 
-**Ponto de partida:** o seu projeto ao fim do capítulo 07, com as tarefas analisadas.
+**Ponto de partida:** o seu projeto ao fim do capítulo 08, com as tarefas analisadas.
 **Tag de chegada:** `fase-5a-rodada-1` (o fim da primeira rodada, tarefas T001 a T035).
 
 ## O que vamos fazer e por quê
@@ -150,7 +150,7 @@ git tag -a fase-5a-rodada-1 -m "Fase 5a - Rodada 1 concluida"
 git push origin fase-5a-rodada-1
 ```
 
-Ela é uma tag intermediária, para você poder voltar ao fim da primeira rodada. A tag oficial da fase 5 (`fase-5-implementacao`) só sai na última rodada, no capítulo 09.
+Ela é uma tag intermediária, para você poder voltar ao fim da primeira rodada. A tag oficial da fase 5 (`fase-5-implementacao`) só sai na última rodada, no capítulo 10.
 
 ## O que esperar
 
@@ -184,13 +184,13 @@ Eu usei a terceira porque quis ver o que a revisão por tarefa pega. Se o seu pr
 
 **Para comparar com o laboratório:** tag [`fase-5a-rodada-1`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-5a-rodada-1).
 
-## O que isso mostrou
+## O que aprendemos
 
 - **Dar liberdade ao agente exige perguntar o que ele fez depois.** Os Rulings são a "caixa-preta" do processo.
 - **A revisão final achou o que as revisões por tarefa não acharam.** O furo de concorrência no bloqueio só aparece olhando o conjunto. Reveja a branch inteira, mesmo com tudo verde.
 - **Subagente com acesso ao terminal pode fazer estrago fora do projeto.** Na T023, um subagente rodou `taskkill /IM node.exe` para parar o servidor de desenvolvimento, e isso matou **todos** os processos Node da minha máquina, não só os do projeto. Nada se perdeu de forma permanente, mas desde então eu proíbo isso nas instruções dos subagentes ("pare só o processo que você iniciou"). Na T021, outro usou `git stash`; a pilha de stash é compartilhada entre o checkout principal e os worktrees, então passei a proibir também. **Diga o que o agente não pode fazer, não só o que ele deve fazer.**
 - **O plano envelhece.** O CLI do shadcn/ui não era o do guia que eu seguia. Registre divergências assim que aparecem: aqui virou um ADR.
 
-## Gancho
+## O que vem a seguir
 
-O MVP de login passou em 105 testes (78 no backend, 27 no frontend), e a revisão final ainda achou quatro problemas sérios. Se um código "pronto" ainda tinha quatro, **o que será que as próximas rodadas vão esconder?** E quem lê tudo isso, os Rulings, as revisões, os resultados? No [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/09-revisao-em-camadas-e-rulings/) eu mostro as outras seis rodadas e o que só a revisão final achou em cada uma.
+O MVP de login passou em 105 testes (78 no backend, 27 no frontend), e a revisão final ainda achou quatro problemas sérios. Se um código "pronto" ainda tinha quatro, **o que será que as próximas rodadas vão esconder?** E quem lê tudo isso, os Rulings, as revisões, os resultados? No [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/10-revisao-em-camadas-e-rulings/) eu mostro as outras seis rodadas e o que só a revisão final achou em cada uma.

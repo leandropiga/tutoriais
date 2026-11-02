@@ -1,13 +1,13 @@
 ---
-title: 09. Revisão em camadas e Rulings
+title: 10. Revisão em camadas e Rulings
 description: As rodadas 2 a 6 e o que só a revisão final da branch achou (rodadas 1, 2 e 7) e o que as revisões por tarefa pegaram. Mais os Rulings, que são as decisões que a IA toma sem te chamar.
 ---
 
 ## Onde estamos
 
-Nono capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/08-implementar-com-subagentes/) rodei a primeira rodada, o MVP de login, e a revisão final ainda achou quatro problemas sérios.
+Décimo capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/09-implementar-com-subagentes/) rodei a primeira rodada, o MVP de login, e a revisão final ainda achou quatro problemas sérios.
 
-**Ponto de partida:** o seu projeto ao fim do capítulo 08, com a rodada 1 mergeada.
+**Ponto de partida:** o seu projeto ao fim do capítulo 09, com a rodada 1 mergeada.
 **Tag de chegada:** `fase-5-implementacao` (as rodadas 2 a 6 mergeadas; a validação manual e as dívidas vêm nos capítulos seguintes).
 
 ## O que vamos fazer e por quê
@@ -112,7 +112,7 @@ No fim de cada rodada, peça a lista e salve-a em `docs/rulings.md`. Estes são 
 | 4 | Corrida estreita no `PUT` adiada: a transação confirma **antes** de o PDF novo ser renomeado no disco | pode gravar análise do PDF antigo |
 | 5 | `PUT /api/perfil` é substituição completa: campo omitido vira `null` | quem mandar só o `nome` apaga foto e telefone sem aviso |
 
-Repare no Ruling da rodada 4: uma janela de corrida minúscula, **conscientemente adiada**. Ela voltou a aparecer no capítulo 10 e foi fechada lá.
+Repare no Ruling da rodada 4: uma janela de corrida minúscula, **conscientemente adiada**. Ela voltou a aparecer no capítulo 11 e foi fechada lá.
 
 ### 5. Feche a rodada
 
@@ -147,7 +147,7 @@ cd frontend && npm run build && grep -ri GEMINI dist   # deve voltar vazio
 
 **Para comparar com o laboratório:** tag [`fase-5-implementacao`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-5-implementacao).
 
-## O que isso mostrou
+## O que aprendemos
 
 - **Revisão em camadas se paga.** A de tarefa pega defeitos locais; a final pega o que só se vê no conjunto. Nos casos da revisão final, cada peça estava certa sozinha, e o problema morava na costura.
 - **Concorrência é onde a revisão mais paga.** Ler achou o que rodar não achou.
@@ -156,6 +156,6 @@ cd frontend && npm run build && grep -ri GEMINI dist   # deve voltar vazio
 - **Deixar o agente decidir só é seguro se as decisões ficarem escritas.** Os Rulings são a caixa-preta do processo, e o ledger virou o mapa de recuperação.
 - **Agrupar tarefas pequenas** (por exemplo, três tarefas relacionadas num lote) cortou despachos e revisões sem perder rastreio, porque o commit continua sendo por tarefa.
 
-## Gancho
+## O que vem a seguir
 
-Os testes estão verdes, a revisão final aprovou e o `tasks.md` está quase todo marcado. Mas teste verde diz que o **código faz o que o teste pede**, não que a **tela funciona** quando você abre o navegador e clica. E eu ainda não chamei a IA de verdade (os testes usam um dublê). No [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/10-validacao-e-dividas/) eu faço o que nenhum teste faz: sigo o roteiro manual com o Gemini real.
+Os testes estão verdes, a revisão final aprovou e o `tasks.md` está quase todo marcado. Mas teste verde diz que o **código faz o que o teste pede**, não que a **tela funciona** quando você abre o navegador e clica. E eu ainda não chamei a IA de verdade (os testes usam um dublê). No [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/11-validacao-e-dividas/) eu faço o que nenhum teste faz: sigo o roteiro manual com o Gemini real.
