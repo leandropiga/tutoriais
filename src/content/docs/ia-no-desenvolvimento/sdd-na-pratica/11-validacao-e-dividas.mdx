@@ -1,27 +1,29 @@
 ---
 title: 11. Validação e dívidas
-description: O roteiro manual de 14 passos com a IA de verdade, como ler o log quando a IA devolve erro e a rodada 7, que fechou as cinco dívidas que mexem com produção e segurança.
+description: O roteiro manual do quickstart com a IA de verdade, como ler o log quando a IA devolve erro e uma rodada extra para fechar as dívidas que mexem com produção e segurança.
 ---
 
 ## Onde estamos
 
-No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/10-revisao-em-camadas/) as rodadas 2 a 6 terminaram com a suíte toda verde.
+No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/10-revisao-em-camadas/) todas as rodadas do `tasks.md` foram mergeadas, com a suíte toda verde.
 
-**Ponto de partida:** o seu projeto ao fim do capítulo 10, com as rodadas 2 a 6 mergeadas e o Docker disponível.
-**Tag de chegada:** `fase-6-validacao` marca o fim da validação manual (passos 1 a 5 abaixo). A rodada 7 (passos 6 a 8) termina no merge da rodada 7, que não tem tag.
+**Ponto de partida:** o seu projeto ao fim do capítulo 10 (tag `fase-5-implementacao`), com o Docker disponível.
+**Tag de chegada:** `fase-6-validacao`, que marca o fim da validação manual (passos 1 a 6 abaixo). A rodada das dívidas (passos 7 a 9) vem depois e termina no merge, sem tag.
 
 ## O que vamos fazer e por quê
 
 Os testes automáticos dizem que o código faz o que combinamos. Mas ninguém ainda **usou a aplicação de verdade**, e a IA ainda só foi chamada por um dublê. Esta etapa faz duas coisas:
 
-1. **Validação manual.** Seguir os 14 passos do `quickstart.md`, na tela, com a chave real do Gemini, e anotar o que acontece.
-2. **Rodada 7: as dívidas.** Ao longo das rodadas 3 a 6 fui anotando "dívidas": coisas que não quebravam nada, mas que incomodariam em produção. Antes de pensar em deploy, escolhi as cinco que mexem com produção ou segurança e fechei todas.
+1. **Validação manual.** Seguir o roteiro de validação do `quickstart.md`, na tela, com a chave real do Gemini, e anotar o que acontece.
+2. **Uma rodada para as dívidas.** Ao longo das rodadas, ficaram anotadas "dívidas": coisas que não quebravam nada, mas que incomodariam em produção. Antes de pensar em deploy, vale escolher as que mexem com produção ou segurança e fechá-las.
 
 ## Passo a passo
 
 ### 1. Monte o ambiente
 
-O `backend/.env` não vai para o Git, então você cria a partir do exemplo e preenche. Para a validação com IA você precisa de uma chave da API do Gemini (se não tiver, pule os passos 9 e 11 do roteiro; o resto funciona).
+O `backend/.env` não vai para o Git, então você cria a partir do exemplo e preenche com as variáveis que o seu `.env.example` pede. Para a validação com IA você precisa de uma chave da API do Gemini. Se não tiver, pule os passos do roteiro que chamam a IA; o resto funciona.
+
+No meu caso, os comandos foram estes:
 
 ```bash
 docker compose up -d
@@ -41,13 +43,15 @@ npm ci
 npm run dev              # app em http://localhost:5173
 ```
 
-Os dois servidores de desenvolvimento não terminam. Se você juntar migração, seed e servidores num comando só, ele nunca volta, ou o comando nunca termina e estoura o tempo limite. Rode cada passo separado.
+Os nomes das variáveis e dos scripts (`seed`, `dev`) vêm do plano. Confira os seus no `quickstart.md` e nos `package.json`.
 
-Atenção a um detalhe: sem `node_modules` na pasta, o `npx prisma` baixa a versão mais recente do Prisma (a 8, em testes), na qual o comando `migrate` nem existe. Rode `npm ci` nas duas pastas **antes** de qualquer `npx`.
+Os dois servidores de desenvolvimento não terminam. Se você juntar migração, seed e servidores num comando só, ele nunca volta, ou estoura o tempo limite. Rode cada passo separado.
 
-### 2. Gere os arquivos de teste do passo 6
+Atenção a um detalhe: sem `node_modules` na pasta, o `npx prisma` baixa a versão mais recente do Prisma, que pode ser outra versão principal, com outros comandos. Rode `npm ci` nas duas pastas **antes** de qualquer `npx`.
 
-O passo 6 do roteiro usa três PDFs: um válido, um texto puro com extensão `.pdf` e um acima de 50 MB. Este script cria os três na pasta atual:
+### 2. Gere os PDFs de teste
+
+O roteiro tem um passo de upload que testa três casos: um PDF válido, um texto puro com extensão `.pdf` e um PDF acima de 50 MB. Este script cria os três na pasta atual:
 
 ```javascript
 import { writeFileSync, appendFileSync } from 'node:fs';
@@ -77,7 +81,9 @@ Salve como `gerar.mjs` e rode `node gerar.mjs`. O PDF válido é mínimo; se o s
 
 ### 3. Siga o roteiro
 
-Esta é a tabela do `quickstart.md`, seção 5. Rode na ordem:
+Abra o **seu** `quickstart.md` e ache a seção de validação: uma tabela de passos, cada um com o resultado esperado. Siga na ordem, na tela, e anote o resultado de cada passo.
+
+No meu caso, o roteiro tinha 14 passos:
 
 | # | História | Passos | Resultado esperado |
 |---|---|---|---|
@@ -96,29 +102,43 @@ Esta é a tabela do `quickstart.md`, seção 5. Rode na ordem:
 | 13 | Perfil (P5) | Alterar nome, foto (URL) e telefone | Nome e foto aparecem no menu |
 | 14 | Arquivos | Após os passos 6 e 9, listar `backend/tmp/uploads` | Diretório vazio (Princípio IV) |
 
-O passo 14 vale um comentário: é a regra da constituição ("apagar inclusive em caso de erro") conferida na prática, com a pasta de uploads **vazia** depois de um upload bem-sucedido, um recusado e uma análise.
+O seu roteiro pode ter outra numeração e outros passos. Alguns merecem atenção, em qualquer versão:
 
-Os 14 passos devem passar. No passo 3 você não precisa esperar os 15 minutos do desbloqueio: basta conferir o aviso.
+- **O passo da pasta de uploads** (no meu caso, o 14) é a regra da constituição ("apagar inclusive em caso de erro") conferida na prática: a pasta deve estar **vazia** depois de um upload bem-sucedido, um recusado e uma análise.
+- **No passo do bloqueio de login,** você não precisa esperar os 15 minutos do desbloqueio: basta conferir o aviso.
+- **Os passos da análise** dependem de um serviço externo. Os passos 4 e 5 abaixo explicam o que fazer quando eles falham.
 
-### 4. Se o passo 9 falhar, leia o log antes de mexer no código
+O esperado é que todos os passos passem. Se algum falhar, siga para o próximo passo antes de mexer no código.
 
-Pode aparecer na tela "serviço de análise temporariamente indisponível". O primeiro reflexo é achar que o seu código tem um bug. Antes de mexer em qualquer coisa, olhe o log do backend, que mostra o que o Google devolveu:
+### 4. Se um passo falhar, leia o log antes de mexer no código
+
+A mensagem da tela é genérica de propósito; o motivo de verdade está no log do servidor. Antes de mudar qualquer coisa:
+
+1. **Anote** o passo, o que você fez e o que apareceu.
+2. **Leia o log do backend** no terminal onde ele roda.
+3. **Decida o tipo do problema:**
+   - **Serviço externo fora do ar:** espere e repita (veja o exemplo abaixo).
+   - **Bug no código:** peça a correção ao agente **com teste primeiro**, como uma tarefa nova no `tasks.md`, e não como um remendo direto.
+   - **A spec não dizia o que fazer:** corrija a spec antes, e depois o código, na ordem do SDD.
+
+No meu caso, o passo da análise mostrou na tela "serviço de análise temporariamente indisponível". O log do backend mostrava o que o Google tinha devolvido:
 
 ```text
 503 UNAVAILABLE: This model is currently experiencing high demand.
 Spikes in demand are usually temporary. Please try again later.
 ```
 
-Se a chamada chegou ao Gemini, a chave está certa, e o **modelo estava sobrecarregado**. O app fez o certo: mapeou o erro para `503 IA_INDISPONIVEL` e mostrou a mensagem combinada, sem vazar nada técnico (Princípio III). Esse erro é, de brinde, um ensaio do passo 11. Espere um pouco e repita: a análise volta a funcionar sem mexer em código.
+Se a chamada chegou ao Gemini, a chave está certa, e o **modelo estava sobrecarregado**. O app fez o certo: mapeou o erro para `503 IA_INDISPONIVEL` e mostrou a mensagem combinada, sem vazar nada técnico (Princípio III). Esperei um pouco, repeti, e a análise funcionou sem mexer em código.
 
-**Leia o log antes de "consertar".** A mensagem da tela é genérica de propósito; o motivo de verdade está no log do servidor.
+**Leia o log antes de "consertar".**
 
-### 5. O passo 11: o `.env` só é lido na partida
+### 5. Para simular a chave inválida, reinicie o backend
 
-Para simular a chave inválida, trocar o `backend/.env` não bastou: o servidor leu o arquivo ao subir. O `tsx watch` vigia o código, não o `.env`. Foi preciso **reiniciar o backend**, e de novo para restaurar a chave depois:
+O roteiro tem um passo que testa a chave inválida (no meu caso, o 11). Trocar a `GEMINI_API_KEY` no `backend/.env` **não basta**: o servidor lê o arquivo só ao subir, e o `tsx watch` vigia o código, não o `.env`. Depois de trocar a chave, reinicie o backend. E reinicie de novo depois de restaurar a chave certa.
+
+No macOS/Linux, basta `Ctrl+C` no terminal do backend e `npm run dev` outra vez. No Windows, se o terminal não estiver à mão, pare o processo que escuta na porta 3000 e suba de novo:
 
 ```powershell
-# Windows: parar o que escuta na porta 3000 e subir de novo
 Get-NetTCPConnection -LocalPort 3000 -State Listen | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }
 ```
 
@@ -126,11 +146,42 @@ Get-NetTCPConnection -LocalPort 3000 -State Listen | ForEach-Object { Stop-Proce
 cd backend && npm run dev
 ```
 
-No macOS/Linux, basta `Ctrl+C` no terminal do backend e `npm run dev` outra vez.
+### 6. Feche a validação com uma tag
 
-### 6. A rodada 7: fechar as cinco dívidas
+Com todos os passos do roteiro passando, e o resultado de cada um anotado, a validação manual está feita. Confira com `git status` se não ficou nada para commitar e marque o ponto:
 
-Essas cinco tarefas não estavam no `tasks.md` original. Eu criei uma "Fase 10: Dívidas técnicas antes do deploy" (T079 a T083), para a rodada ter escopo explícito, como manda o ADR de implementação por rodadas. Divergir do plano está certo, desde que fique escrito.
+```bash
+git tag -a fase-6-validacao -m "Fase 6 - Validacao concluida"
+git push origin fase-6-validacao
+```
+
+### 7. Escolha as dívidas
+
+As dívidas ficaram espalhadas: Rulings de "adiar" no `docs/rulings.md`, achados menores das revisões e itens que você mesmo anotou. Peça ao agente para juntar tudo:
+
+```text
+Liste as dívidas técnicas anotadas ao longo da implementação: os Rulings que adiaram algo em
+docs/rulings.md, os achados Minor das revisões e os itens que ficaram para depois. Para cada uma,
+diga o risco e se ela mexe com produção ou segurança.
+```
+
+Escolha as que **mexem com produção ou segurança**. As outras ficam anotadas, de propósito. Anotada não é paga, mas escolher é melhor que tentar fechar tudo.
+
+Depois, peça a fase nova:
+
+```text
+Crie uma fase nova no fim do tasks.md, "Dívidas técnicas antes do deploy", com uma tarefa para
+cada dívida escolhida: <liste aqui>. Use IDs novos, na sequência das tarefas existentes, e
+atualize o quadro de rodadas do ADR de implementação por rodadas com esta rodada.
+```
+
+Essas tarefas não estavam no `tasks.md` original. Divergir do plano está certo, desde que fique escrito: a fase nova dá à rodada um escopo explícito, como manda o ADR.
+
+### 8. Rode a rodada das dívidas
+
+Peça a rodada como no capítulo 10, seguindo o ADR. Leia a revisão final e os Rulings como nas outras rodadas.
+
+No meu caso, foram cinco tarefas, numa "Fase 10" (T079 a T083):
 
 | Tarefa | O problema | A correção |
 |---|---|---|
@@ -140,11 +191,11 @@ Essas cinco tarefas não estavam no `tasks.md` original. Eu criei uma "Fase 10: 
 | T082 | `fotoUrl` aceitava texto de qualquer tamanho | máximo de 2048 caracteres, no backend e no formulário |
 | T083 | o frontend era um arquivo só de 964 kB (o Vite avisava) | `React.lazy` nas telas e grupos de vendor |
 
-Backend e frontend não se tocam, então rodaram em paralelo. A T081 foi sozinha: mexe em concorrência, e os testes do backend dividem o mesmo banco, então dois rodando juntos se atropelariam.
+Backend e frontend não se tocam, então essas tarefas rodaram em paralelo. A T081 foi sozinha: mexe em concorrência, e os testes do backend dividem o mesmo banco, então dois rodando juntos se atropelariam.
 
 **A corrida do `PUT`, explicada.** Antes, a ordem era: (1) grava no banco e confirma; (2) move o PDF novo para o storage. Entre o 1 e o 2 existia um intervalo minúsculo em que o banco já dizia "contrato novo", mas o arquivo ainda era o velho. O teste que prova isso falhou primeiro, como deve: ele pausa o `PUT` exatamente no `rename` e dispara a análise nesse momento. Depois da correção, o `update` da linha segura um *lock* no Postgres, e a trava do `POST /analise` espera esse lock soltar.
 
-Troquei um problema por outro menor: se o commit falhar *depois* do `rename`, fica o PDF novo com a linha antiga. Aceitei, por escrito, como Ruling.
+A correção trocou um problema por outro menor: se o commit falhar *depois* do `rename`, fica o PDF novo com a linha antiga. Ficou aceito, por escrito, como Ruling.
 
 **Resultado do bundle (T083):**
 
@@ -154,51 +205,42 @@ Troquei um problema por outro menor: se o commit falhar *depois* do `rename`, fi
 | Carregado de início | 964 kB | 542 kB |
 | Aviso do Vite (>500 kB) | sim | sumiu |
 
-### 7. A revisão achou um defeito na junção de duas tarefas
+**A revisão final achou um defeito na junção de duas tarefas.** Ela aprovou as cinco tarefas, sem nada Critical, mas achou um **Important** de verdade: o fallback do `EXDEV` (T079) copiava *por cima* do PDF do contrato. Se a cópia morresse no meio, o PDF ficava truncado, e no `PUT` o banco desfazia, mas o arquivo antigo já tinha sido estragado. Cada tarefa estava certa sozinha; a costura entre a T079 e a T081 não. A correção foi copiar para `<destino>.<uuid>.part` na mesma pasta e só então fazer `rename`, que é atômico.
 
-A revisão aprovou as cinco tarefas, sem nada Critical, mas achou um **Important** de verdade: o fallback do `EXDEV` (T079) copiava *por cima* do PDF do contrato. Se a cópia morresse no meio, o PDF ficava truncado, e no `PUT` o banco desfazia mas o arquivo antigo já tinha sido estragado. Cada tarefa estava certa sozinha; a costura entre a T079 e a T081 não.
+### 9. Feche a rodada
 
-A correção: copiar para `<destino>.<uuid>.part` na mesma pasta e só então fazer `rename`, que é atômico.
-
-### 8. Marque os pontos
-
-No laboratório, a tag `fase-6-validacao` fecha a validação manual, antes da rodada 7:
-
-```bash
-git tag -a fase-6-validacao -m "Fase 6 - Validacao concluida"
-git push origin fase-6-validacao
-```
-
-A rodada 7 foi mergeada na `main` como um commit de etapa à parte.
+Mesma sequência do capítulo 10: merge local, testes de novo na `main` e push. Esta rodada não tem tag própria: o próximo ponto marcado é o deploy, no capítulo 12.
 
 ## O que esperar
 
-- Os 14 passos do roteiro concluídos, com o resultado de cada um anotado.
-- A pasta `backend/tmp/uploads` vazia ao fim.
-- Cinco tarefas novas (T079 a T083) marcadas `[X]` no `tasks.md`.
-- Suítes verdes: no meu caso, 309 no backend e 76 no frontend, e o build do frontend sem o aviso de chunk grande.
+- Todos os passos do roteiro de validação concluídos, com o resultado de cada um anotado.
+- A pasta de uploads temporários vazia ao fim.
+- A tag `fase-6-validacao` no remoto, no fim da validação.
+- Uma fase nova de dívidas no `tasks.md`, toda marcada `[X]` e mergeada na `main`.
+- Suítes verdes e o build do frontend sem o aviso de chunk grande. No meu caso, foram 309 testes no backend e 76 no frontend.
 
 ## Divergências comuns
 
-- **O passo 9 devolve "serviço indisponível".** Leia o log do backend antes de qualquer coisa. Se for 503 do Google, espere e repita. Se for 400 ou 403, a chave está errada ou sem permissão.
-- **Você não tem chave do Gemini.** Pule os passos 9 e 11. O resto do roteiro vale.
-- **O modelo do Gemini do plano (`gemini-3.8-flash`) não existe mais ou mudou.** Serviço externo muda. Troque pelo modelo equivalente atual, registre num ADR e rode o passo 9 de novo.
-- **A troca de chave no passo 11 não surtiu efeito.** Reinicie o backend. O `.env` só é lido na partida.
-- **A sua lista de dívidas é outra.** Normal. Escolha as que mexem com produção ou segurança e deixe as outras anotadas. Anotada não é paga: eu deixei vários itens em aberto, de propósito (acessibilidade do menu de perfil e do gráfico, "tentar de novo" na Home, alguns testes menores).
+- **A análise devolve "serviço indisponível".** Leia o log do backend antes de qualquer coisa. Se for 503 do Google, espere e repita. Se for 400 ou 403, a chave está errada ou sem permissão.
+- **Você não tem chave do Gemini.** Pule os passos que chamam a IA. O resto do roteiro vale.
+- **O modelo do Gemini do plano (no meu caso, `gemini-3.8-flash`) não existe mais ou mudou.** Serviço externo muda. Troque pelo modelo equivalente atual, registre num ADR e repita o passo da análise.
+- **A troca de chave não surtiu efeito.** Reinicie o backend. O `.env` só é lido na partida.
+- **A sua lista de dívidas é outra.** Normal. Escolha as que mexem com produção ou segurança e deixe as outras anotadas. No meu caso, ficaram em aberto, de propósito, a acessibilidade do menu de perfil e do gráfico, o "tentar de novo" na Home e alguns testes menores.
 - **Os números de tamanho do bundle são diferentes.** Dependem das versões. O que vale é o aviso sumir e o carregamento inicial ficar abaixo dos 500 kB.
 
-**Para comparar com o laboratório:** tag [`fase-6-validacao`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-6-validacao). Ela marca o fim da validação manual, então a rodada 7 não está nela.
+**Para comparar com o laboratório:** tag [`fase-6-validacao`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-6-validacao). Ela marca o fim da validação manual, então a rodada das dívidas não está nela.
 
 ## O que aprendemos
 
 - **Mudou o `.env`? Reinicie o servidor.** Variáveis de ambiente são lidas só na partida.
 - **Uma IA externa vai ficar indisponível de vez em quando.** Tratar isso com mensagem amigável não é capricho, é requisito.
 - **Testar com a chave real mostra o que o dublê esconde.**
+- **Leia o log antes de consertar.** E, se for bug, corrija com teste primeiro, como qualquer outra tarefa.
 - **Consertar uma coisa pode abrir outra.** O fallback do `EXDEV` estava certo sozinho, mas junto com o `PUT` virou risco. Quem achou foi a revisão olhando as duas juntas.
 - **Teste de corrida precisa de um gancho no ponto exato**, não de `sleep` e sorte.
-- **Dividir o bundle traz uma falha nova:** se um pedaço não carregar (por exemplo depois de um deploy, com nome de arquivo antigo), a tela quebra. Eu ainda não tinha um `ErrorBoundary`. Eu devia ter planejado isso desde o início; virou dívida.
+- **Dividir o bundle traz uma falha nova:** se um pedaço não carregar (por exemplo depois de um deploy, com nome de arquivo antigo), a tela quebra. Se dividir o bundle, planeje um `ErrorBoundary` junto.
 - **Divergir do plano é ok, se ficar escrito.**
 
 ## O que vem a seguir
 
-Os 14 passos passaram, as cinco dívidas fecharam, e a aplicação roda inteira localmente. Falta uma decisão que o tutorial inteiro vinha adiando: **onde isso roda?** Eu vou decidir isso no [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/12-deploy-local-e-retrospectiva/), e depois olhar para trás e dizer, com honestidade, o que funcionou, o que não funcionou e o que eu faria diferente.
+A aplicação roda inteira localmente, validada na tela, e as dívidas mais perigosas foram pagas. Falta uma decisão que o tutorial inteiro vinha adiando: **onde isso roda?** No [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/12-deploy-local-e-retrospectiva/) vamos reabrir essa decisão, provar que o projeto sobe do zero e olhar para trás: o que funcionou, o que não funcionou e o que faríamos diferente.
