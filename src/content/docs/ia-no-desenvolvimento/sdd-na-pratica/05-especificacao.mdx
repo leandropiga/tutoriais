@@ -5,7 +5,7 @@ description: O que o sistema faz, para quem e como saber se ficou certo, por his
 
 ## Onde estamos
 
-Quinto capítulo. No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/04-constituicao/) escrevemos a constituição, com as regras que valem para o projeto inteiro. Agora falta dizer o que o sistema faz.
+No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/04-constituicao/) escrevemos a constituição, com as regras que valem para o projeto inteiro. Agora falta dizer o que o sistema faz.
 
 **Ponto de partida:** o seu projeto ao fim do capítulo 04, com a constituição em `.specify/memory/constitution.md`.
 **Ponto de chegada:** a spec criada, antes da clarificação. Não há tag aqui: a `fase-2-especificacao` só fecha no [capítulo 06](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/06-nao-tinha-pensado-nisso/).
@@ -22,10 +22,18 @@ Abra o Claude Code na pasta do projeto.
 
 ### 1. A especificação
 
-O texto da spec partiu de uma descrição funcional que eu já tinha. Duas escolhas minhas:
+**Como escrever o texto**
 
-- Tirei o nome "Gemini" da spec e escrevi "um serviço de IA". O fornecedor já está fixado na constituição; a spec só descreve comportamento.
-- **Deixei lacunas de propósito**: o endereço é um campo só, o PDF não tem limite de tamanho e eu não disse o que acontece se a IA demorar. Queria ver o agente achar esses buracos. Num projeto seu, você preencheria o que já sabe.
+Assim como na constituição, o texto é livre. Algumas dicas:
+
+- **Descreva o quê e para quem, sem tecnologia.** A stack já está na constituição; a spec só descreve comportamento. Por isso o exemplo fala em "um serviço de IA", e não em Gemini.
+- **Separe por áreas** (clientes, contratos, painel…), com as regras de cada uma.
+- **Diga o que fica fora do escopo.** Sem isso, o agente pode incluir o que você não pediu.
+- **Comece pela visão do produto** do capítulo 03: o problema, quem usa e o que entra já estão lá.
+
+:::note[Lacunas de propósito]
+O exemplo deixa três pontos em aberto: o endereço é um campo só, o PDF não tem limite de tamanho e o texto não diz o que acontece se a IA demorar. É de propósito, para você ver o agente achar esses buracos aqui e no próximo capítulo. Num projeto seu, preencha o que você já sabe.
+:::
 
 Digite `/speckit-specify` e cole o texto:
 
@@ -77,18 +85,39 @@ e-mails e tem dificuldade para encontrá-los, contá-los e lembrar dos riscos de
 - Assinatura digital, versionamento de contratos e alertas de vencimento.
 ```
 
-O comando conferiu *hooks*, leu `.specify/init-options.json` (numeração `sequential`, então a primeira funcionalidade ganhou o número `001`), criou `specs/001-gestao-contratos-clientes/`, gravou o caminho em `.specify/feature.json` (é assim que `clarify`, `plan` e `tasks` sabem onde está a spec), escreveu o `spec.md` a partir do template e validou contra um checklist de qualidade.
+**O que o comando faz**
 
-Observação: no Spec Kit 1.2.0, criar uma branch por funcionalidade é tarefa de um *hook* opcional. Como não instalei nenhum, continuei na `main`. Para um tutorial, o histórico linear fica mais fácil de seguir com as tags.
+O `/speckit-specify` cria três arquivos:
+
+| Arquivo | Para quê |
+|---|---|
+| `specs/001-gestao-contratos-clientes/spec.md` | a especificação |
+| `specs/001-gestao-contratos-clientes/checklists/requirements.md` | o checklist de qualidade da spec |
+| `.specify/feature.json` | aponta qual é a funcionalidade atual, para o `clarify`, o `plan` e o `tasks` saberem onde está a spec |
+
+Quando você roda o comando, o agente:
+
+1. **Dá nome e número à funcionalidade.** O nome sai do seu texto (`gestao-contratos-clientes`) e o número é o próximo livre em `specs/` (`001`, por ser a primeira).
+2. **Lê a constituição**, para a spec não contradizer as regras do projeto.
+3. **Preenche o template da spec** com o seu texto: histórias de usuário, requisitos, entidades e critérios de sucesso. O que você não disse, ele decide por conta própria e anota nas **Premissas**.
+4. **Marca até três dúvidas** com `[NEEDS CLARIFICATION]`, só as de maior impacto. As outras viram premissas.
+5. **Valida a spec com o checklist** e corrige o que reprovar, refazendo até três vezes.
+
+Neste tutorial trabalhamos direto na `main`. Criar uma branch por funcionalidade depende de um *hook* opcional, que não instalamos.
 
 ### 2. Conheça o que saiu
 
-| Seção | Conteúdo |
-|---|---|
-| Histórias de usuário | 6, com prioridade: login (P1), clientes (P1), contratos (P2), análise por IA (P3), painel (P4), perfil (P5) |
-| Requisitos funcionais | 34 (FR-001 a FR-034) |
-| Entidades | Usuário, Cliente, Contrato, Análise de Contrato |
-| Critérios de sucesso | 9, todos mensuráveis (ex.: "encontrar um contrato em menos de 30 s") |
+A spec inteira fica num arquivo só: `specs/001-gestao-contratos-clientes/spec.md`. Histórias, requisitos e o resto são **seções** desse arquivo, não arquivos separados. Abra o `spec.md` e acompanhe:
+
+| Seção no `spec.md` | O que tem | No meu caso |
+|---|---|---|
+| Cenários de Usuário e Testes | as **histórias de usuário**, uma por subseção, e os casos extremos | 6 histórias: login (P1), clientes (P1), contratos (P2), análise por IA (P3), painel (P4), perfil (P5) |
+| Requisitos → Requisitos Funcionais | o que o sistema deve fazer, numerado | 34 (FR-001 a FR-034) |
+| Requisitos → Entidades-Chave | os dados com que o sistema trabalha | Usuário, Cliente, Contrato, Análise de Contrato |
+| Critérios de Sucesso | como medir se a funcionalidade deu certo | 9, todos mensuráveis (ex.: "encontrar um contrato em menos de 30 s") |
+| Premissas | o que o agente decidiu sem perguntar | veja o passo 4 |
+
+O outro arquivo, `checklists/requirements.md`, é só o checklist de qualidade: uma lista de itens marcados ou não, que o passo 3 explica.
 
 Cada história tem **o motivo da prioridade**, um **teste independente** e **cenários de aceitação** no formato Dado, Quando, Então. Um exemplo, da primeira história:
 
@@ -96,11 +125,28 @@ Cada história tem **o motivo da prioridade**, um **teste independente** e **cen
 >
 > **Dado** um usuário cadastrado, **Quando** informa uma senha errada, **Então** continua na tela de login e vê uma mensagem genérica de credenciais inválidas, sem indicar qual dos dois campos está errado.
 
-### 3. A validação corrigiu a própria spec
+Os **requisitos funcionais** também foram criados agora, pelo `/speckit-specify`, quando ele preencheu o template. Ficam na seção "Requisitos Funcionais" do `spec.md`, agrupados por área, cada um com um código `FR-###` (de *Functional Requirement*) e uma frase com **DEVE**:
 
-Na primeira passada, o checklist de qualidade **reprovou** um requisito: o FR-030 dizia "demora excessiva da IA". Quanto é excessivo? Não dá para testar. O agente trocou por um padrão de mercado, 60 segundos, e anotou nas **Premissas**. (Eu queria 15 segundos; isso vai aparecer no próximo capítulo.)
+```markdown
+**Acesso e perfil**
 
-O checklist, por design, deixa no máximo **três** marcadores `[NEEDS CLARIFICATION]`. O agente usou os três:
+- **FR-001**: O sistema DEVE exigir login com usuário e senha para acessar qualquer tela ou dado,
+  exceto a própria tela de login.
+- **FR-002**: O sistema DEVE recusar credenciais inválidas com uma mensagem genérica, sem revelar
+  se o usuário existe.
+```
+
+O código importa porque é por ele que as próximas etapas se referem a cada regra: a clarificação, o plano e as tarefas citam "FR-017", e não "aquela regra do tamanho do PDF". Os critérios de sucesso seguem a mesma ideia, com o código `SC-###` (de *Success Criteria*).
+
+### 3. A validação da spec
+
+Depois de escrever a spec, o agente confere o texto com o checklist de qualidade. O esperado é que algum item **reprove** na primeira passada, já que o texto de entrada tem lacunas de propósito. Quando isso acontece, o agente corrige a spec sozinho e confere de novo.
+
+No meu caso, o checklist reprovou o FR-030, que dizia "demora excessiva da IA". Quanto é excessivo? Não dá para testar. O agente trocou por um padrão de mercado, 60 segundos, e anotou nas **Premissas**. (Eu queria 15 segundos; isso vai aparecer no próximo capítulo.)
+
+No seu caso, o item reprovado pode ser outro, ou nenhum. O que importa é o resultado: no fim, o checklist deve ter todos os itens marcados, menos o de `[NEEDS CLARIFICATION]`, que só fecha no próximo capítulo.
+
+O comando deixa no máximo **três** marcadores `[NEEDS CLARIFICATION]` na spec, só para as dúvidas de maior impacto. No meu caso, o agente usou os três:
 
 | Requisito | Pergunta |
 |---|---|
@@ -108,7 +154,17 @@ O checklist, por design, deixa no máximo **três** marcadores `[NEEDS CLARIFICA
 | FR-017 | Qual é o tamanho máximo do PDF? |
 | FR-010 | O que acontece ao excluir um cliente que tem contratos? |
 
-Ele ofereceu responder ali mesmo. Eu preferi deixar para o `/speckit-clarify`, que é a etapa feita para isso.
+As suas dúvidas podem ser outras, ou menos de três. Tudo bem: o próximo capítulo trata as que aparecerem.
+
+**Não responda as perguntas agora.** Quando sobram marcadores, o `/speckit-specify` mostra as dúvidas no fim da execução, cada uma com opções (A, B, C ou uma resposta sua), e pede a sua escolha. Em vez de escolher, responda algo como:
+
+```text
+Não vou responder agora. Deixe os marcadores [NEEDS CLARIFICATION] na spec: vou tratá-los com o /speckit-clarify.
+```
+
+O motivo: o `/speckit-clarify`, do próximo capítulo, é a etapa feita para isso. Ele relê a spec inteira atrás de ambiguidades (não só essas três), faz até cinco perguntas, uma de cada vez, com uma recomendação para cada, e registra as respostas numa seção própria da spec. Responder aqui pula esse trabalho.
+
+Se você já respondeu, tudo bem: as suas respostas entram na spec no lugar dos marcadores, e o próximo capítulo vai tratar as dúvidas que ainda restarem.
 
 :::caution[⚠️ Erro encenado]
 O valor que eu vou responder para o tamanho do PDF no próximo capítulo (100 MB) **é de propósito**. O Gemini aceita no máximo 50 MB por PDF, e eu não conto isso ao agente. Num projeto real, você leria os limites da API antes de responder. Quero ver o que o SDD faz com o erro.
@@ -116,12 +172,27 @@ O valor que eu vou responder para o tamanho do PDF no próximo capítulo (100 MB
 
 ### 4. Leia as Premissas
 
-Algumas "perguntas em aberto" da visão do produto não viraram pergunta. O agente decidiu sozinho e anotou nas **Premissas**: o primeiro usuário é criado na instalação, o CPF é único e validado, e a análise da IA fica guardada (só a mais recente). São escolhas razoáveis, mas mostram por que é preciso **ler as Premissas**: é ali que o agente esconde as decisões que tomou por você.
+Nem toda dúvida vira pergunta. Quando o agente acha que existe uma resposta razoável, ele decide sozinho e anota a decisão na seção **Premissas**, no fim do `spec.md`.
+
+No meu caso, algumas "perguntas em aberto" da visão do produto foram parar ali:
+
+- o primeiro usuário é criado na instalação;
+- o CPF é único e validado;
+- a análise da IA fica guardada (só a mais recente).
+
+São escolhas razoáveis, mas foram feitas **no seu lugar, sem você ver**. É por isso que essa seção merece leitura atenta.
+
+O que fazer:
+
+1. Abra o `spec.md` e leia a seção **Premissas** inteira.
+2. Para cada item, pergunte: "eu teria decidido igual?".
+3. Se discordar de algum, peça ao agente para corrigir a spec agora, ou anote para levantar na clarificação do próximo capítulo.
 
 ## O que esperar
 
 - `specs/001-gestao-contratos-clientes/spec.md` com seis histórias, mais de trinta requisitos e três `[NEEDS CLARIFICATION]`.
 - `specs/001-gestao-contratos-clientes/checklists/requirements.md` com a maioria dos itens marcados (no meu, 15 de 16).
+- `.specify/feature.json` apontando para `specs/001-gestao-contratos-clientes` (fica fora do Git).
 - Nenhum código de aplicação.
 
 Para conferir: abra a spec e procure, em cada história, o **teste independente**. Se alguma não tiver, a história é grande demais ou vaga demais.
@@ -130,7 +201,7 @@ Para conferir: abra a spec e procure, em cada história, o **teste independente*
 
 - **O número de histórias ou requisitos não bate.** Normal. O modelo agrupa de outro jeito. O que importa é cada história ter prioridade, teste independente e cenários.
 - **Não apareceram exatamente três perguntas, ou outras.** Também normal. Trate o que aparecer no próximo capítulo.
-- **O agente gravou o `feature.json` e ele apareceu no `git status`.** No meu laboratório esse arquivo fica no `.gitignore`: é estado local da sua máquina.
+- **O `feature.json` apareceu no `git status`.** Ele é estado local da sua máquina, e o `specify init` já o coloca em `.specify/.gitignore`. Se apareceu, confira se esse arquivo existe.
 
 **Para comparar com o laboratório:** não há tag no fim deste capítulo. A mais próxima é [`fase-2-especificacao`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-2-especificacao), que já inclui a clarificação do capítulo 06.
 
@@ -138,8 +209,10 @@ Para conferir: abra a spec e procure, em cada história, o **teste independente*
 
 - **O limite de três perguntas força o agente a priorizar**: o resto vira premissa. Leia as premissas.
 - **O checklist de qualidade pega requisito vago** ("demora excessiva") antes que ele vire código vago.
-- **Revisão vale até para a IA.** No primeiro rascunho da spec, o agente esqueceu de marcar a lacuna do endereço e só percebeu ao revisar o próprio texto.
+- **O agente revisa o próprio texto.** A validação com o checklist pega o que ele deixou passar na primeira versão.
 
 ## O que vem a seguir
 
-A spec está pronta, com 34 requisitos, seis histórias e um checklist quase todo verde. Parece completa. **Será que não ficou nada de fora?** Eu tinha três lacunas em mente e deixei de propósito. Mas quando rodei o próximo comando, ele me fez cinco perguntas, e uma delas eu realmente nem tinha pensado. Está no [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/06-nao-tinha-pensado-nisso/).
+A spec está pronta: histórias, requisitos e um checklist quase todo verde. Parece completa. **Será que não ficou nada de fora?**
+
+No meu caso, eu tinha três lacunas em mente, deixadas de propósito, e esperava três perguntas. O próximo comando fez cinco, e uma delas eu realmente nem tinha pensado. Com você, o número e as perguntas podem ser outros, mas a chance de aparecer algo que você não previu é grande. Vamos descobrir no [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/06-nao-tinha-pensado-nisso/).
