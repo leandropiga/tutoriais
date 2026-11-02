@@ -1,13 +1,13 @@
 ---
 title: 08. Tarefas e análise
-description: Quebrar o plano em tarefas com critério de pronto e usar o /speckit-analyze para achar falhas de segurança e violações da constituição antes de existir código.
+description: Quebrar o plano em tarefas com critério de pronto e usar o /speckit-analyze para achar inconsistências entre constituição, spec, plano e tarefas antes de existir código.
 ---
 
 ## Onde estamos
 
-No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/07-planejamento/) o plano técnico saiu e corrigiu o limite do PDF para 50 MB.
+No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/07-planejamento/) o plano técnico saiu, e você corrigiu a spec para 50 MB.
 
-**Ponto de partida:** o seu projeto ao fim do capítulo 07, com o plano técnico pronto.
+**Ponto de partida:** o seu projeto ao fim do capítulo 07, com o plano técnico pronto (tag `fase-3-planejamento`).
 **Tag de chegada:** `fase-4-tarefas` (as tarefas analisadas e corrigidas).
 
 ## O que vamos fazer e por quê
@@ -15,23 +15,30 @@ No [anterior](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/07-planejamento/) 
 Duas coisas:
 
 1. **Quebrar o plano em tarefas.** Um plano diz *o que* construir, mas não *em que ordem*. A **lista de tarefas** resolve a ordem, mostra o que pode ser feito em paralelo e dá um ponto de parada claro depois de cada pedaço. É essa lista que o agente vai executar na implementação, uma tarefa por vez.
-2. **Rodar a análise.** O `/speckit-analyze` confere se a constituição, a spec, o plano e as tarefas **contam a mesma história**. Eu tinha mexido na spec depois do plano (os 50 MB) e reorganizado as tarefas, e é exatamente nessas costuras que as coisas se perdem. A análise **só lê**: não muda nenhum arquivo, entrega um relatório e pergunta se você quer sugestões de correção.
+2. **Rodar a análise.** O `/speckit-analyze` confere se a constituição, a spec, o plano e as tarefas **contam a mesma história**. Você mexeu na spec depois do plano (os 50 MB), e é exatamente nessas costuras entre documentos que as coisas se perdem.
 
 ## Passo a passo
 
 ### 1. Gerar as tarefas
 
 ```text
-/speckit-tasks Escreva as tarefas em português do Brasil.
+/speckit-tasks Escreva as tarefas em português do Brasil. Inclua as tarefas de teste antes das
+de implementação, como exige a constituição (Princípio I).
 ```
 
-Por baixo dos panos, um script localiza a funcionalidade e o template:
+**O que o comando faz**
 
-```powershell
-.specify/scripts/powershell/setup-tasks.ps1 -Json
-```
+O `/speckit-tasks` gera **um arquivo só**: `specs/001-gestao-contratos-clientes/tasks.md`. Quando você roda o comando, o agente:
 
-O agente lê todos os artefatos do plano e monta o `specs/001-gestao-contratos-clientes/tasks.md`.
+1. **Lê os documentos do plano.** O `plan.md` e o `spec.md` são obrigatórios. O `data-model.md`, os `contracts/`, o `research.md`, o `quickstart.md` e a constituição entram se existirem.
+2. **Separa as histórias de usuário** da spec, com as prioridades (P1, P2…), e liga a cada uma as entidades e rotas que ela usa.
+3. **Monta as fases:** Setup, Fundação (o que todas as histórias precisam), uma fase por história, em ordem de prioridade, e um Acabamento no fim.
+4. **Escreve cada tarefa num formato fixo**, com o caminho do arquivo que ela cria ou altera.
+5. **Acrescenta as seções de apoio:** dependências entre histórias, exemplos do que pode rodar em paralelo e uma estratégia de entrega (MVP primeiro).
+
+O comando **não faz commit** e não escreve código.
+
+Por que a frase sobre testes no prompt? O modelo de tarefas do Spec Kit trata os testes como opcionais: só gera tarefas de teste quando elas são pedidas. A constituição já exige TDD, e o agente costuma perceber isso sozinho, mas pedir explicitamente tira a dúvida.
 
 ### 2. Como a lista é organizada
 
@@ -50,6 +57,8 @@ O formato é rígido, e isso é bom:
 
 As tarefas são agrupadas **por história de usuário**, não por camada técnica. Em vez de "fazer todos os modelos, depois todas as rotas, depois todas as telas", cada história vai do banco à tela e termina testável sozinha.
 
+No meu caso, a lista ficou assim:
+
 | Fase | Tarefas | O que entrega |
 |---|---|---|
 | 1. Setup | 10 | Docker, os dois pacotes, Tailwind v4, shadcn, Vitest |
@@ -63,11 +72,11 @@ As tarefas são agrupadas **por história de usuário**, não por camada técnic
 | 9. Acabamento | 5 | segurança, desempenho, quickstart |
 | **Total** | **78** | 41 marcadas como paralelizáveis |
 
-(No fim do projeto o `tasks.md` tem 86 tarefas: as últimas oito nasceram da validação e das dívidas, nos capítulos 11 e 12. Aqui são 78.)
+Os seus números vão ser outros. O que importa é a estrutura: fases por história, com Setup e Fundação antes.
 
 ### 3. Testes primeiro, de verdade
 
-O template do Spec Kit trata os testes como "opcionais". Aqui eles não são: a constituição (Princípio I) exige TDD. Então, em cada história, as tarefas de teste vêm **antes** e as de implementação dizem qual teste precisam fazer passar:
+Em cada história, as tarefas de teste devem vir **antes**, e as de implementação devem dizer qual teste precisam fazer passar:
 
 ```text
 - [ ] T028 [P] [US1] Teste HTTP em backend/tests/http/auth.test.ts: ...
@@ -77,21 +86,34 @@ O template do Spec Kit trata os testes como "opcionais". Aqui eles não são: a 
 
 Esse "até T0xx passar" é o **critério de pronto** de cada tarefa. Não tem discussão.
 
-Outro detalhe: as regras dos campos foram **copiadas literalmente** do `data-model.md` para as tarefas (por exemplo, `nomeCompleto` "obrigatório, 3–150 caracteres"). Assim, quem implementa não precisa adivinhar nem reabrir outro documento.
+Repare também se as regras dos campos foram **copiadas literalmente** do `data-model.md` para as tarefas (por exemplo, `nomeCompleto` "obrigatório, 3–150 caracteres"). Assim, quem implementa não precisa adivinhar nem reabrir outro documento.
 
-### 4. O agente revisou a própria lista
+Se, na sua lista, os testes vierem depois da implementação, ou faltarem, peça ao agente:
 
-Na primeira versão havia um problema de dependência: o teste de "não pode excluir cliente com contratos" (História 2) precisava criar contratos, mas o modelo Contrato só era criado na História 3. Ou seja, a História 2 não era testável sozinha, o que quebra a regra principal da lista.
+```text
+Reorganize o tasks.md: em cada história, as tarefas de teste vêm antes das de implementação, e
+cada tarefa de implementação diz quais testes precisa fazer passar.
+```
 
-A correção: Cliente e Contrato são usados por quatro histórias, então foram para a **Fundação**. Depois disso, as tarefas foram renumeradas por um script descartável que o agente escreveu (para não errar referências como "até T037–T039 passarem"), e o formato foi validado com `grep`: toda tarefa tem checkbox, ID, rótulo de história (quando deve ter) e caminho de arquivo.
+### 4. Confira se cada história é testável sozinha
+
+Essa é a regra principal da lista: cada história deve poder ser implementada e testada sem depender de uma história posterior. Leia as tarefas de teste de cada história e pergunte: "esse teste precisa de algo que só é criado mais adiante?".
+
+No meu caso, havia um problema desse tipo: o teste de "não pode excluir cliente com contratos" (História 2) precisava criar contratos, mas o modelo Contrato só era criado na História 3. A correção foi mover Cliente e Contrato, usados por quatro histórias, para a **Fundação**, e renumerar as tarefas.
+
+Se achar um problema assim, descreva-o ao agente e peça a correção. Peça também que ele confira as referências entre tarefas (como "até T037–T039 passarem") depois de renumerar: é fácil uma delas ficar apontando para a tarefa errada.
 
 ### 5. MVP e ordem de entrega
+
+O próprio `tasks.md` traz uma seção de estratégia de implementação, com o MVP e a ordem das entregas. Leia e confira se faz sentido para você.
+
+No meu caso, ficou assim:
 
 - **MVP técnico:** Setup, Fundação e US1 (login).
 - **Primeiro incremento útil:** mais a US2 (clientes). Com o P1 completo, o sistema já serve para alguma coisa.
 - Depois: contratos, análise por IA, painel, perfil, acabamento.
 
-No backend, só a US4 depende de outra história (precisa do upload da US3). As demais podem andar em paralelo depois da Fundação.
+No backend, só a US4 dependia de outra história (precisa do upload da US3). As demais podiam andar em paralelo depois da Fundação.
 
 ### 6. Rodar a análise
 
@@ -101,9 +123,20 @@ Antes de entregar a lista a qualquer agente de implementação:
 /speckit-analyze
 ```
 
-O comando monta um inventário dos requisitos (FR-xxx e SC-xxx), liga cada tarefa a um requisito e procura seis tipos de problema: duplicação, ambiguidade, falta de detalhe, conflito com a constituição, buraco de cobertura e inconsistência.
+**O que o comando faz**
 
-No meu caso: **10 achados.**
+O `/speckit-analyze` **só lê**: não muda nenhum arquivo e não grava o relatório em disco. O resultado aparece só na conversa. Quando você roda o comando, o agente:
+
+1. **Lê a spec, o plano, as tarefas e a constituição.** Se faltar algum, ele para e diz qual comando rodar antes.
+2. **Monta um inventário dos requisitos** (os FR-### e os SC-### que exigem trabalho) e liga cada tarefa a um requisito ou história.
+3. **Procura seis tipos de problema:** duplicação, ambiguidade, falta de detalhe, conflito com a constituição, buraco de cobertura (requisito sem tarefa, tarefa sem requisito) e inconsistência entre documentos.
+4. **Classifica cada achado** como CRITICAL, HIGH, MEDIUM ou LOW. **Conflito com a constituição é sempre CRITICAL.**
+5. **Mostra o relatório**, com no máximo 50 achados, uma tabela de cobertura e métricas (requisitos, tarefas, % de cobertura).
+6. **Pergunta se você quer sugestões de correção.** Ele não aplica nada sozinho.
+
+Por que um achado de "só documentação" pode ser CRITICAL? Porque a constituição não se negocia dentro da análise: ou você ajusta spec, plano e tarefas, ou muda a constituição de forma explícita, com o `/speckit-constitution`.
+
+No meu caso, foram **10 achados**:
 
 | ID | Severidade | O que era |
 |---|---|---|
@@ -114,13 +147,31 @@ No meu caso: **10 achados.**
 | G2 | MEDIUM | O contrato da API manda listar os contratos no detalhe do cliente, mas nenhuma tarefa de backend fazia isso |
 | U2, I1, I2, G3, D1 | LOW | detalhes: teste faltando para `env.ts`, botão "Sair" criado em dois lugares, tipos do React fora da lista, um caso de paginação sem teste, uma repetição aceitável na spec |
 
-Por que o C1 é **CRITICAL** se é "só documentação"? Porque a regra do comando é clara: **conflito com a constituição é sempre crítico.** A constituição não se negocia dentro da análise; ou você ajusta spec, plano e tarefas, ou muda a constituição de forma explícita.
+Os seus achados vão ser outros, em número e em conteúdo: a análise lê os **seus** documentos.
 
 ### 7. Decidir e corrigir
 
-Para o A1 havia duas saídas: proteger também os nomes inexistentes (mais código) ou aceitar o risco e escrever isso. Eu escolhi **aceitar e registrar**: o sistema tem um único usuário, criado na instalação, e o bloqueio já limita tentativas de senha. Risco aceito **por escrito** é diferente de risco ignorado.
+Para cada achado, decida o que fazer:
 
-Pedi as sugestões de correção, revisei, e mandei aplicar todas, inclusive as LOW. Minhas respostas ao Claude foram "vamos pro recomendado" (para o A1) e "aplique tudo, incluindo os LOW".
+- **CRITICAL e HIGH:** corrija antes de implementar.
+- **MEDIUM e LOW:** decida caso a caso. Corrigir agora costuma custar pouco.
+- **Se preferir aceitar um risco** em vez de corrigir, registre a decisão por escrito, na spec (Premissas) ou num ADR. Risco aceito por escrito é diferente de risco ignorado.
+
+Responda à pergunta do fim do relatório pedindo as sugestões:
+
+```text
+Sim, sugira as correções para todos os achados.
+```
+
+Leia as sugestões. Se concordar com todas:
+
+```text
+Aplique todas as correções, incluindo as LOW.
+```
+
+Se discordar de alguma, diga qual e o que prefere. Repare que quem edita os arquivos agora é o agente, a seu pedido, e não o `/speckit-analyze`: o comando terminou no relatório.
+
+No meu caso, para o A1 havia duas saídas: proteger também os nomes inexistentes (mais código) ou aceitar o risco e escrever isso. Aceitei e registrei, porque o sistema tem um único usuário, criado na instalação, e o bloqueio já limita as tentativas de senha. As correções ficaram assim:
 
 | Achado | Correção |
 |---|---|
@@ -131,7 +182,7 @@ Pedi as sugestões de correção, revisei, e mandei aplicar todas, inclusive as 
 | G2 | tarefa e teste para devolver os contratos no detalhe do cliente |
 | LOW | teste de `env.ts`, "Sair" é *movido* para o menu de perfil, tipos do React, caso de paginação |
 
-Nenhuma correção mudou a numeração das tarefas, e nenhum comando precisou ser refeito. Foram edições pontuais em `spec.md`, `plan.md`, `research.md`, `data-model.md`, `contracts/api.md` e `tasks.md`.
+Foram edições pontuais em `spec.md`, `plan.md`, `research.md`, `data-model.md`, `contracts/api.md` e `tasks.md`, sem refazer nenhum comando.
 
 ### 8. Rodar a análise de novo
 
@@ -139,11 +190,19 @@ Nenhuma correção mudou a numeração das tarefas, e nenhum comando precisou se
 /speckit-analyze
 ```
 
-No meu caso: **zero achados.** Cobertura de 100% dos 40 requisitos, nenhum conflito com a constituição, 78 tarefas no formato certo. Rodar de novo é a prova de que a correção não abriu outro buraco.
+Rodar de novo é a prova de que a correção não abriu outro buraco. O esperado é **nenhum achado CRITICAL ou HIGH** e todos os requisitos com pelo menos uma tarefa. Se ainda aparecerem achados, repita o passo 7 para eles.
+
+No meu caso, a segunda rodada não teve achado nenhum: cobertura de 100% dos 40 requisitos, nenhum conflito com a constituição e 78 tarefas no formato certo.
 
 ### 9. Feche a fase com uma tag
 
-Commite as correções e a segunda análise limpa. Esse commit é o fim da fase 4, e é nele que vai a tag:
+O `CLAUDE.md` do capítulo 02 pede ao agente um commit por etapa concluída. Confira se as tarefas e as correções já foram commitadas:
+
+```bash
+git status
+```
+
+Se ainda houver arquivos alterados, peça ao agente para commitar (ou commite você). Com tudo commitado, crie a tag:
 
 ```bash
 git tag -a fase-4-tarefas -m "Fase 4 - Tarefas analisadas"
@@ -154,7 +213,7 @@ git push origin fase-4-tarefas
 
 - Um `tasks.md` com tarefas no formato `- [ ] T0xx [P] [USn] descrição com caminho de arquivo`, agrupadas por história.
 - Em cada história, tarefas de teste antes das de implementação, com "até T0xx passar" como critério de pronto.
-- Um relatório de análise com achados (os meus foram 10; os seus podem ser mais ou menos) e uma segunda rodada limpa depois das correções.
+- Um relatório de análise com achados (os meus foram 10; os seus podem ser mais ou menos) e uma segunda rodada sem achados CRITICAL ou HIGH depois das correções.
 - A tag `fase-4-tarefas` no remoto, no commit das correções.
 
 Para conferir: depois da segunda análise, o relatório deve dizer que não há achados críticos ou altos, e que cada requisito tem pelo menos uma tarefa.
@@ -165,7 +224,8 @@ Para conferir: depois da segunda análise, o relatório deve dizer que não há 
 - **Nenhum achado crítico na primeira rodada.** Ótimo para você. Rode de novo depois de qualquer mudança que fizer.
 - **O número de tarefas é diferente de 78.** Normal. Importa a estrutura: testes antes, por história, com critério de pronto.
 - **A análise sugeriu mudar a constituição.** Pode ser o certo. Mas faça isso de forma explícita, com o `/speckit-constitution` e um registro da decisão, e não aceite um conflito calado.
-- **O analyze apontou o vazamento do usuário no login e você quer proteger também.** Pode. Vale uma tarefa e um teste a mais. Eu aceitei o risco por escrito porque o sistema tem um único usuário.
+- **O analyze apontou o vazamento do usuário no login e você quer proteger também.** Pode. Vale uma tarefa e um teste a mais. No meu caso, aceitei o risco por escrito porque o sistema tem um único usuário.
+- **Os achados mudaram entre duas rodadas sem você mexer em nada.** Pode acontecer: a análise é feita por um modelo, e não por um programa determinístico. Trate cada achado pelo conteúdo, não pelo ID.
 
 **Para comparar com o laboratório:** tag [`fase-4-tarefas`](https://github.com/leandropiga/arkhos.labs.sdd.contract/tree/fase-4-tarefas). Lá ela marca o ponto logo depois de gerar as tarefas e **antes** da análise, então as correções deste capítulo não estão nela.
 
@@ -174,10 +234,10 @@ Para conferir: depois da segunda análise, o relatório deve dizer que não há 
 - **Organizar por história, e não por camada, é o que permite entregar e testar aos pedaços.**
 - **Um critério de pronto objetivo evita tarefas que "quase" terminam.**
 - **Cada documento pode estar certo sozinho e errado em conjunto.** O analyze olha as costuras.
-- **Achei uma falha de segurança e uma violação da constituição antes de existir código.** O conserto custou algumas linhas de texto.
+- **A análise pode achar falhas de segurança e violações da constituição antes de existir código.** O conserto custa algumas linhas de texto.
 - **Aceitar um risco é uma decisão válida, desde que fique escrita.**
 - **Rode o analyze de novo depois de corrigir.**
 
 ## O que vem a seguir
 
-Tudo certo no papel: constituição, spec, plano e 78 tarefas, todas coerentes entre si. Agora vem a parte em que a maioria dos tutoriais começa: escrever código. Eu vou deixar **subagentes** fazerem isso, um para escrever cada tarefa e outro para revisar. No [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/09-implementar-com-subagentes/) eu mostro como isso funciona e quanto custa.
+Tudo certo no papel: constituição, spec, plano e tarefas, coerentes entre si. Agora vem a parte em que a maioria dos tutoriais começa: escrever código. Em vez de pedir tudo a um agente só, vamos usar **subagentes**: um para escrever cada tarefa e outro para revisar. Como isso se organiza, e o que pode dar errado no caminho, é o assunto do [próximo capítulo](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/09-implementar-com-subagentes/).
