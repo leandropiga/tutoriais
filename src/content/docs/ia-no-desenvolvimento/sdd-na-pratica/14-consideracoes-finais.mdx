@@ -1,0 +1,80 @@
+---
+title: 14. Considerações finais
+description: O que a comunidade elogia e critica no Superpowers e no Spec Kit, para você decidir com mais do que a experiência de um projeto só.
+---
+
+## Onde estamos
+
+O tutorial terminou: você saiu da ideia, passou pela spec, pelo plano e pelas tarefas, implementou, validou e publicou. Agora vale dar um passo atrás e olhar os frameworks de fora.
+
+Um projeto só, feito por uma pessoa só, é pouco para julgar uma ferramenta. Por isso reuni aqui o que outras pessoas contam, em fóruns, artigos e repositórios, sobre o uso do Superpowers e do Spec Kit, tanto o que dá certo quanto o que incomoda. São relatos, não medições: leia como opiniões de quem já passou por esse caminho, e compare com o que você viu no seu projeto.
+
+## Superpowers
+
+### O que a comunidade elogia
+
+- **O erro aparece no texto, não no código.** Quem usa costuma citar o fim do "pesadelo de 20 minutos": aquele em que a IA entende errado o pedido, sai escrevendo, apaga uma configuração importante em outro lugar e perde a visão do repositório. Como o Superpowers obriga a IA a perguntar, planejar e ter o design aprovado antes de programar, o mal-entendido aparece num documento, onde corrigir custa uma frase, e não no meio do código.
+
+- **Trabalho isolado e base conferida.** A skill `using-git-worktrees` cria uma cópia de trabalho separada (worktree) e roda os testes existentes **antes** de começar. Se algo já está quebrado, ela avisa e pergunta o que fazer, em vez de construir a funcionalidade nova em cima de uma base com defeito. E, como o agente trabalha na worktree, você continua livre para mexer na branch principal. Foi o que usamos no [capítulo 10](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/10-revisao-em-camadas/).
+
+- **TDD de verdade, sem preguiça.** Em projetos que exigem rigor, a regra de escrever primeiro um teste que falha é vista como o grande trunfo do framework. A IA não se cansa de escrever testes, e há quem relate coberturas bem acima do que a equipe costumava ter. Para muita gente, isso resolve uma resistência antiga: escrever o teste antes do código.
+
+- **Menos "deterioração de contexto".** Em sessões longas, a IA tende a raciocinar pior conforme a conversa cresce (o chamado *context rot*). O Superpowers ataca isso quebrando o plano em tarefas pequenas e, onde a ferramenta permite (como no Claude Code), entregando cada tarefa a um subagente novo, com a memória limpa. É a skill `subagent-driven-development`, a mesma do [capítulo 09](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/09-implementacao/). É isso que deixa a IA trabalhar por horas sem se afastar do plano.
+
+- **Depuração com método.** Em vez de tentar correções ao acaso até o erro sumir, sem saber por quê, a skill `systematic-debugging` faz a IA ler o stack trace, procurar padrões, formular uma hipótese e testar uma mudança por vez. O resultado é corrigir a causa do problema, e não só esconder o sintoma.
+
+- **Entregas mais previsíveis.** Há relatos de equipes em que uma funcionalidade estimada em semanas de trabalho saiu em horas, com poucas correções depois, graças à combinação de spec orientada e TDD. Vale o desconto de sempre para casos de sucesso, mas a tendência aparece com frequência.
+
+- **Funciona em mais de uma ferramenta.** As skills seguem o padrão aberto de *Agent Skills* ([agentskills.io](https://agentskills.io)), publicado pela Anthropic. Por isso o mesmo método pode ser usado no Claude Code, no Codex, no Cursor e em outras ferramentas, e sobrevive à troca de ferramenta, que no mercado de hoje acontece o tempo todo.
+
+### O que a comunidade critica
+
+- **Consome muitos tokens.** É a queixa mais comum: há quem chame o Superpowers de "sugador de tokens". Carregar as instruções, avaliar o tempo todo se alguma skill deve entrar em ação e orquestrar vários subagentes custa caro. Em tarefas pequenas, o gasto pode passar do triplo de um pedido direto à IA, e há quem estoure o limite de uso do plano antes de ver a primeira linha de código.
+
+- **Burocracia demais para o que é simples.** Brainstorm, spec, plano, testes e revisão fazem sentido numa funcionalidade nova. Para corrigir um bug de uma linha, quando você já sabe a solução, o mesmo ritual vira atrito: o framework ainda quer perguntar, documentar e planejar.
+
+- **TDD sem exceção.** A mesma regra que uns elogiam, outros criticam. Para quem está explorando uma ideia ou montando um protótipo descartável, exigir um teste que falha antes de qualquer código é gasto de tempo e de tokens. E se a IA escreve o código antes do teste, a skill manda apagar e recomeçar, o que atrasa justamente o trabalho que era para ser rápido.
+
+- **Planos detalhados demais.** Ao quebrar o trabalho em tarefas pequenas, a IA tende a escrever quase todo o código final dentro do plano, em Markdown. Isso engessa a implementação: se o subagente descobre no meio do caminho que uma API funciona diferente do previsto, ele tem pouca margem para se adaptar.
+
+- **Skills que entram sem ser chamadas.** As skills são acionadas pela leitura que a IA faz da conversa, e não por um comando que você digita. Basta comentar de passagem uma melhoria futura para começar um brainstorm que ninguém pediu, e lá se vai o foco da tarefa atual.
+
+- **Specs que envelhecem, e um framework que muda rápido.** As specs geradas são documentos datados, de um momento do projeto, e o framework não tem um jeito próprio de mantê-las em dia conforme o projeto muda. Além disso, as versões mudam com frequência, às vezes trocando pastas e comandos de lugar, o que exige manutenção constante de quem adota.
+
+## Spec Kit
+
+Com o Spec Kit, o padrão se repete: as críticas pesam mais nas tarefas pequenas, e os elogios aparecem nos sistemas grandes e complexos, sobretudo em empresas.
+
+### O que a comunidade elogia
+
+- **Menos adivinhação, menos retrabalho.** O Spec Kit ataca o principal defeito do *vibe coding*: a IA tentando adivinhar todos os requisitos a partir de um pedido curto. Com uma etapa de clarificação e um plano estruturado antes de qualquer código, fica mais difícil a IA entregar algo que parece certo, mas resolve o problema errado do ponto de vista do negócio. Foi o papel do `/speckit-clarify` no [capítulo 06](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/06-clarificacao/).
+
+- **Rastreabilidade.** É o benefício mais citado, e o mais valorizado em setores regulados, como saúde e finanças. Na revisão de código, boa parte dos problemas encontrados pode ser ligada a um requisito escrito e aprovado no `spec.md`. Isso cria uma trilha de auditoria: dá para mostrar por que a IA tomou cada decisão.
+
+- **Mais acerto em tarefas difíceis.** Quando a tarefa é densa, como um serviço bancário cheio de restrições e regras que não podem ser quebradas, pedir à IA que escreva primeiro a spec e depois as tarefas, em passos separados, aumenta bastante a taxa de acerto. O ganho aparece sobretudo em modelos menos potentes.
+
+- **Cada especialista no seu papel.** Como os artefatos são texto, pessoas diferentes podem opinar antes de existir código. O time de produto valida as histórias de usuário, o time de segurança coloca as suas restrições na constituição, e a IA segue as duas coisas quando quebra o trabalho em tarefas. Foi o que fizemos, em escala pequena, no [capítulo 04](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/04-constituicao/).
+
+- **Um ponto de partida limpo para cada sessão.** Em vez de continuar o trabalho a partir de um histórico de chat longo e confuso, uma sessão nova, ou um agente novo, começa pela spec, pelo plano e pelas tarefas. É um contexto enxuto e focado, que não depende de lembrar o que foi dito três horas antes.
+
+- **Um ecossistema que cresce.** As extensões são bem avaliadas. O catálogo da comunidade já tem dezenas delas, para problemas bem práticos: sincronizar as tarefas com o Jira ou o Linear, auditar a arquitetura, economizar tokens. O [capítulo 13](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/13-extras/) mostra como instalar uma.
+
+### O que a comunidade critica
+
+- **Muito contexto gasto logo no começo.** Os comandos carregam scripts, modelos e regras, como a constituição, e há relatos de milhares de tokens consumidos antes de o agente olhar o código. Dependendo da ferramenta, isso ocupa uma fatia grande da janela de contexto antes de o trabalho começar.
+
+- **Documento demais também atrapalha.** O fluxo faz o agente reler spec, plano e tarefas o tempo todo. Com a memória cheia desses textos longos, a qualidade do código pode cair, e o modelo começa a ignorar regras importantes, justamente o *context rot* que a spec queria evitar.
+
+- **Cerimônia para pouca coisa.** Escrever a intenção, clarificar, planejar e quebrar em tarefas faz sentido numa funcionalidade nova. Para um ajuste do dia a dia, vira burocracia: há quem conte ter gerado uma pilha de arquivos Markdown para acrescentar um botão ou mexer em menos de 20 linhas.
+
+- **Spec e código se afastam sem ninguém perceber.** Na correria, depois que a primeira versão sai, a equipe tende a esquecer os documentos e corrigir direto no código. Aos poucos, o código deixa de ser o que a spec descreve, e a IA, ao consultar a spec mais tarde, passa a trabalhar em cima de uma descrição que já não vale. É o chamado *silent drift*.
+
+- **Difícil em monorepos e microsserviços.** O Spec Kit foi pensado para um repositório com um sistema. Em sistemas grandes, com vários serviços, organizar as specs fica confuso, e há quem acabe com gambiarras na estrutura, ou até com um repositório só para coordenar o trabalho das IAs.
+
+- **Preocupação com segurança.** Os scripts rodam no terminal com as permissões do seu usuário. Se a IA interpretar mal um plano, pode executar um comando perigoso no seu ambiente de trabalho. Quanto disso é risco real depende do agente: no Claude Code, por exemplo, as permissões e o modo de aprovação decidem o que roda sem você ver.
+
+## O que vem a seguir
+
+Aqui o tutorial termina. Se quiser rever o caminho inteiro, a [visão geral](/tutoriais/ia-no-desenvolvimento/sdd-na-pratica/) lista todos os capítulos.
+
+Se a sua experiência com o Superpowers ou o Spec Kit confirmar ou contrariar algum desses relatos, abra uma issue no [repositório do laboratório](https://github.com/leandropiga/arkhos.labs.sdd.contract/issues) e conte o que achou.
